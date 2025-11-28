@@ -56,16 +56,31 @@ pub enum TransformationType {
 impl Artefact {
     /// Create a new artefact
     pub fn new(node: NodeIndex, signature: Signature5D) -> Self {
+        let resonance = qops_core::resonance_5d(&signature);
+        let is_mandorla = resonance >= 0.85 &&
+            signature.psi * signature.rho * signature.omega >= 0.5;
+
         Self {
             id: Uuid::new_v4(),
             node,
             signature,
             blueprint: Vec::new(),
-            resonance: qops_core::resonance_5d(&signature),
-            is_mandorla: false,
+            resonance,
+            is_mandorla,
             created_at: Utc::now(),
             stability: 0.5,
         }
+    }
+
+    /// Create artefact from just a signature (uses dummy node)
+    pub fn from_signature(signature: Signature5D) -> Self {
+        Self::new(NodeIndex::new(0), signature)
+    }
+
+    /// Check if artefact is in Mandorla zone
+    pub fn is_mandorla(&self) -> bool {
+        self.resonance >= 0.85 &&
+            self.signature.psi * self.signature.rho * self.signature.omega >= 0.5
     }
 
     /// Add a transformation to the blueprint

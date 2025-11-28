@@ -120,6 +120,89 @@ export interface GenesisResultDto {
   total_steps: number;
 }
 
+export interface ExtendedGenesisResultDto {
+  artefacts: ArtefactDto[];
+  best_resonance: number;
+  mandorla_count: number;
+  total_steps: number;
+  families: FamilyDto[];
+  triton_info: TritonInfoDto | null;
+  stats: MiningStatsDto;
+}
+
+export interface FamilyDto {
+  name: string;
+  member_count: number;
+  avg_resonance: number;
+  characteristics: FamilyCharacteristicsDto;
+}
+
+export interface FamilyCharacteristicsDto {
+  is_high_quality: boolean;
+  is_stable: boolean;
+  is_efficient: boolean;
+}
+
+export interface TritonInfoDto {
+  best_score: number;
+  iterations: number;
+  converged: boolean;
+}
+
+export interface MiningStatsDto {
+  avg_resonance: number;
+  std_resonance: number;
+  unique_nodes: number;
+  duration_ms: number;
+}
+
+export interface Cube13MetricsDto {
+  avg_resonance: number;
+  center_resonance: number;
+  hexagon_avg_resonance: number;
+  cube_avg_resonance: number;
+  coherence: number;
+  embedding_count: number;
+  coverage: number;
+}
+
+export interface Cube13NodeDto {
+  id: number;
+  node_type: string;
+  centrality: number;
+  neighbors: number[];
+  embedding: SignatureDto | null;
+}
+
+export interface TopologyWalkDto {
+  path: number[];
+  coverage: number;
+  final_node: number;
+  steps_taken: number;
+}
+
+export interface SweepResultDto {
+  total_configurations: number;
+  best_config_index: number;
+  best_score: number;
+  evaluations: SweepEvaluationDto[];
+}
+
+export interface SweepEvaluationDto {
+  config_index: number;
+  parameters: Record<string, number>;
+  final_score: number;
+  convergence_rate: number;
+}
+
+export interface AutoTuneResultDto {
+  best_temperature: number;
+  best_cooling_rate: number;
+  best_mandorla_threshold: number;
+  achieved_resonance: number;
+  iterations: number;
+}
+
 export interface QuantumWalkResultDto {
   time_points: number[];
   center_probabilities: number[];
@@ -240,15 +323,19 @@ export async function runQaoa(edges: [number, number][], layers: number, shots: 
 }
 
 // ============================================================================
-// Genesis Commands
+// Genesis Commands (TRITON-powered)
 // ============================================================================
 
 export async function runGenesisMining(
   agents: number,
   steps: number,
   strategy: string
-): Promise<GenesisResultDto> {
+): Promise<ExtendedGenesisResultDto> {
   return invoke('run_genesis_mining', { agents, steps, strategy });
+}
+
+export async function getGenesisFamilies(): Promise<FamilyDto[]> {
+  return invoke('get_genesis_families');
 }
 
 export async function getS7TopologyInfo(): Promise<TopologyInfoDto> {
@@ -260,7 +347,7 @@ export async function getNodeDetails(nodeId: number): Promise<NodeDetailsDto> {
 }
 
 // ============================================================================
-// Quantum Commands
+// Quantum Commands (Cube-13 Topology)
 // ============================================================================
 
 export async function runQuantumWalk(times: number[]): Promise<QuantumWalkResultDto> {
@@ -269,6 +356,29 @@ export async function runQuantumWalk(times: number[]): Promise<QuantumWalkResult
 
 export async function getCube13Info(): Promise<TopologyInfoDto> {
   return invoke('get_cube13_info');
+}
+
+export async function getCube13Metrics(): Promise<Cube13MetricsDto> {
+  return invoke('get_cube13_metrics');
+}
+
+export async function getCube13Node(nodeId: number): Promise<Cube13NodeDto> {
+  return invoke('get_cube13_node', { nodeId });
+}
+
+export async function runCube13Walk(start: number, steps: number): Promise<TopologyWalkDto> {
+  return invoke('run_cube13_walk', { start, steps });
+}
+
+export async function embedInCube13(
+  node: number,
+  psi: number,
+  rho: number,
+  omega: number,
+  chi: number,
+  eta: number
+): Promise<Cube13MetricsDto> {
+  return invoke('embed_in_cube13', { node, psi, rho, omega, chi, eta });
 }
 
 export async function runCube13Vqe(layers: number): Promise<VqeResultDto> {
@@ -297,7 +407,7 @@ export async function runBenchmark(
 }
 
 // ============================================================================
-// Calibration Commands
+// Calibration Commands (with Sweeps & Auto-Tuning)
 // ============================================================================
 
 export async function runCalibration(steps: number, target: number): Promise<CalibrationResultDto> {
@@ -306,6 +416,25 @@ export async function runCalibration(steps: number, target: number): Promise<Cal
 
 export async function getCalibrationStatus(): Promise<SignatureDto> {
   return invoke('get_calibration_status');
+}
+
+export async function runHyperparameterSweep(
+  temperatureRange: number[],
+  coolingRateRange: number[],
+  stepsPerConfig: number
+): Promise<SweepResultDto> {
+  return invoke('run_hyperparameter_sweep', {
+    temperatureRange,
+    coolingRateRange,
+    stepsPerConfig,
+  });
+}
+
+export async function runAutoTune(
+  targetResonance: number,
+  maxIterations: number
+): Promise<AutoTuneResultDto> {
+  return invoke('run_auto_tune', { targetResonance, maxIterations });
 }
 
 // ============================================================================

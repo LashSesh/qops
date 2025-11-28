@@ -35,20 +35,27 @@ pub fn run() {
             commands::algorithms::run_qpe,
             commands::algorithms::run_vqe,
             commands::algorithms::run_qaoa,
-            // Genesis commands
+            // Genesis commands (TRITON-powered)
             commands::genesis::run_genesis_mining,
+            commands::genesis::get_genesis_families,
             commands::genesis::get_s7_topology_info,
             commands::genesis::get_node_details,
-            // Quantum commands
+            // Quantum commands (Cube-13 topology)
             commands::quantum::run_quantum_walk,
             commands::quantum::get_cube13_info,
+            commands::quantum::get_cube13_metrics,
+            commands::quantum::get_cube13_node,
+            commands::quantum::run_cube13_walk,
+            commands::quantum::embed_in_cube13,
             commands::quantum::run_cube13_vqe,
             // Research commands
             commands::research::run_experiment,
             commands::research::run_benchmark,
-            // Calibration commands
+            // Calibration commands (with sweeps & auto-tuning)
             commands::calibration::run_calibration,
             commands::calibration::get_calibration_status,
+            commands::calibration::run_hyperparameter_sweep,
+            commands::calibration::run_auto_tune,
             // System commands
             commands::system::get_system_info,
         ])

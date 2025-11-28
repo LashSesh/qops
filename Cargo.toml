@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "core",
+    "triton",
     "genesis",
     "quantum",
     "circuits",
@@ -76,6 +77,7 @@ qops-algorithms = { path = "algorithms" }
 qops-research = { path = "research" }
 qops-seraphic = { path = "seraphic" }
 qops-adapters = { path = "adapters" }
+qops-triton = { path = "triton" }
 
 [profile.release]
 opt-level = 3

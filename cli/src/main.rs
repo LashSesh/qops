@@ -99,24 +99,35 @@ enum TraversalStrategyArg {
     Explorative,
     Exploitative,
     Random,
+    /// TRITON spiral search optimizer
+    Triton,
+    /// Hybrid TRITON + Evolution
+    HybridTriton,
+    /// Swarm mining
+    Swarm,
 }
 
 fn run_genesis(args: GenesisArgs) {
     println!("\n{}", "Genesis Pipeline - S7 Operator Mining".cyan().bold());
     println!("{}\n", "=".repeat(50).dimmed());
 
-    use qops_genesis::{TraversalEngine, AgentConfig, TraversalStrategy};
+    use qops_genesis::{MiningSession, MiningConfig, MiningStrategy};
 
     let strategy = match args.strategy {
-        TraversalStrategyArg::Balanced => TraversalStrategy::Balanced,
-        TraversalStrategyArg::Explorative => TraversalStrategy::Explorative,
-        TraversalStrategyArg::Exploitative => TraversalStrategy::Exploitative,
-        TraversalStrategyArg::Random => TraversalStrategy::Random,
+        TraversalStrategyArg::Balanced => MiningStrategy::Balanced,
+        TraversalStrategyArg::Explorative => MiningStrategy::Explorative,
+        TraversalStrategyArg::Exploitative => MiningStrategy::Exploitative,
+        TraversalStrategyArg::Random => MiningStrategy::Random,
+        TraversalStrategyArg::Triton => MiningStrategy::Triton,
+        TraversalStrategyArg::HybridTriton => MiningStrategy::HybridTritonEvolution,
+        TraversalStrategyArg::Swarm => MiningStrategy::Swarm,
     };
 
-    let config = AgentConfig {
-        max_steps: args.steps,
+    let config = MiningConfig {
         strategy,
+        num_agents: args.agents,
+        steps_per_agent: args.steps,
+        extract_families: true,
         ..Default::default()
     };
 
@@ -125,43 +136,68 @@ fn run_genesis(args: GenesisArgs) {
         args.agents, args.steps, args.strategy);
     println!();
 
-    let pb = ProgressBar::new(args.agents as u64);
-    pb.set_style(ProgressStyle::default_bar()
-        .template("{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {pos}/{len} agents")
-        .unwrap()
-        .progress_chars("#>-"));
+    let pb = ProgressBar::new_spinner();
+    pb.set_style(ProgressStyle::default_spinner()
+        .template("{spinner:.green} [{elapsed_precise}] Mining in progress...")
+        .unwrap());
+    pb.enable_steady_tick(std::time::Duration::from_millis(100));
 
-    let mut engine = TraversalEngine::new();
+    let mut session = MiningSession::new(config);
     let start = Instant::now();
 
-    let artefacts = engine.run_swarm(args.agents, config);
+    let result = session.mine();
 
-    for _ in 0..args.agents {
-        pb.inc(1);
-    }
-    pb.finish_with_message("Mining complete");
-
+    pb.finish_and_clear();
     let elapsed = start.elapsed();
 
-    println!("\n{}", "Results:".green().bold());
+    println!("{}", "Results:".green().bold());
     println!("{}", "-".repeat(50).dimmed());
 
-    for (i, artefact) in artefacts.iter().enumerate() {
-        let status = if artefact.is_mandorla {
+    // Show statistics
+    println!("  Total artefacts: {}", result.artefacts.len());
+    println!("  Mandorla count:  {}", result.mandorla_count);
+    println!("  Avg resonance:   {:.4}", result.stats.avg_resonance);
+    println!("  Std resonance:   {:.4}", result.stats.std_resonance);
+    println!("  Unique nodes:    {}", result.stats.unique_nodes);
+    println!();
+
+    // Show top artefacts
+    println!("{}", "Top Artefacts:".green());
+    let mut sorted_artefacts = result.artefacts.clone();
+    sorted_artefacts.sort_by(|a, b| b.resonance.partial_cmp(&a.resonance).unwrap());
+
+    for (i, artefact) in sorted_artefacts.iter().take(10).enumerate() {
+        let status = if artefact.is_mandorla() {
             "M".green()
         } else {
             "o".dimmed()
         };
-        println!("  {} Artefact {:2}: resonance = {:.4}",
-            status, i + 1, artefact.resonance);
+        println!("  {} {:2}. resonance = {:.4}", status, i + 1, artefact.resonance);
     }
 
-    if let Some(best) = engine.best_artefact() {
+    // Show families if any
+    if !result.families.is_empty() {
+        println!("\n{}: {} discovered", "Operator Families".yellow(), result.families.len());
+        for (i, family) in result.families.iter().take(5).enumerate() {
+            println!("  {}. {} ({} members, avg res: {:.4})",
+                i + 1, family.name, family.members().len(), family.avg_resonance());
+        }
+    }
+
+    // Show TRITON result if available
+    if let Some(triton) = &result.triton_result {
+        println!("\n{}", "TRITON Result:".cyan());
+        println!("  Best score: {:.4}", triton.best_score);
+        println!("  Iterations: {}", triton.iterations);
+        println!("  Converged:  {}", if triton.converged { "Yes".green() } else { "No".red() });
+    }
+
+    if let Some(best) = &result.best_artefact {
         println!("\n{}: resonance = {:.4}",
             "Best artefact".green().bold(), best.resonance);
     }
 
-    println!("\n{}: {:?}", "Elapsed time".dimmed(), elapsed);
+    println!("\n{}: {:?} ({} ms)", "Elapsed time".dimmed(), elapsed, result.duration_ms);
 }
 
 // ============================================================================
