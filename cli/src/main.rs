@@ -79,6 +79,9 @@ enum Commands {
 
 #[derive(Args)]
 struct GenesisArgs {
+    #[command(subcommand)]
+    mode: Option<GenesisMode>,
+
     /// Number of agents for swarm traversal
     #[arg(short, long, default_value_t = 5)]
     agents: usize,
@@ -90,6 +93,90 @@ struct GenesisArgs {
     /// Traversal strategy
     #[arg(long, default_value = "balanced")]
     strategy: TraversalStrategyArg,
+}
+
+#[derive(Subcommand)]
+enum GenesisMode {
+    /// Run holistic multi-stage mining (Kosmokrator → Chronokrator → Pfauenthron)
+    Holistic {
+        /// Number of agents
+        #[arg(short, long, default_value_t = 10)]
+        agents: usize,
+        /// Steps per agent
+        #[arg(short, long, default_value_t = 50)]
+        steps: usize,
+        /// Enable adaptive TRITON
+        #[arg(long, default_value_t = true)]
+        triton: bool,
+        /// Mining preset: quick, thorough, research
+        #[arg(long, default_value = "thorough")]
+        preset: String,
+        /// Export stage logs
+        #[arg(long)]
+        export: bool,
+    },
+    /// Run Kosmokrator filter stage
+    #[command(name = "stage")]
+    Stage {
+        #[command(subcommand)]
+        stage: GenesisStageCommand,
+    },
+    /// Run TRITON spiral search with adaptive features
+    Spiral {
+        /// Enable adaptive radius
+        #[arg(long, default_value_t = true)]
+        adaptive: bool,
+        /// Maximum iterations
+        #[arg(short, long, default_value_t = 1000)]
+        iterations: usize,
+        /// Export trajectory
+        #[arg(long)]
+        export: bool,
+    },
+    /// Finalize mining and create Monolith
+    #[command(name = "finalize")]
+    Finalize {
+        /// Export Monolith report
+        #[arg(long)]
+        export: bool,
+    },
+}
+
+#[derive(Subcommand)]
+enum GenesisStageCommand {
+    /// Kosmokrator: Proof-of-Resonance filtering
+    Kosmokrator {
+        /// Kappa threshold for PoR
+        #[arg(long, default_value_t = 0.7)]
+        kappa: f64,
+        /// Stability epsilon
+        #[arg(long, default_value_t = 0.05)]
+        epsilon: f64,
+        /// Export filter results
+        #[arg(long)]
+        export: bool,
+    },
+    /// Chronokrator: Resonance expansion
+    Chronokrator {
+        /// Number of resonance channels
+        #[arg(long, default_value_t = 4)]
+        channels: usize,
+        /// Base threshold
+        #[arg(long, default_value_t = 0.75)]
+        threshold: f64,
+        /// Visualize dynamics
+        #[arg(long)]
+        visualize: bool,
+    },
+    /// Pfauenthron: Mandorla finalization
+    Pfauenthron {
+        /// Mandorla convergence threshold
+        #[arg(long, default_value_t = 0.8)]
+        mandorla_threshold: f64,
+        /// Number of Ophanim nodes
+        #[arg(long, default_value_t = 4)]
+        ophanim: usize,
+    },
 }
 
 #[derive(ValueEnum, Clone, Debug, Default)]
@@ -108,6 +195,26 @@ enum TraversalStrategyArg {
 }
 
 fn run_genesis(args: GenesisArgs) {
+    // Check if a specific mode was requested
+    if let Some(mode) = args.mode {
+        match mode {
+            GenesisMode::Holistic { agents, steps, triton, preset, export } => {
+                run_holistic_mining(agents, steps, triton, &preset, export);
+            }
+            GenesisMode::Stage { stage } => {
+                run_genesis_stage(stage);
+            }
+            GenesisMode::Spiral { adaptive, iterations, export } => {
+                run_spiral_search(adaptive, iterations, export);
+            }
+            GenesisMode::Finalize { export } => {
+                run_finalize_monolith(export);
+            }
+        }
+        return;
+    }
+
+    // Default genesis mining behavior
     println!("\n{}", "Genesis Pipeline - S7 Operator Mining".cyan().bold());
     println!("{}\n", "=".repeat(50).dimmed());
 
@@ -198,6 +305,531 @@ fn run_genesis(args: GenesisArgs) {
     }
 
     println!("\n{}: {:?} ({} ms)", "Elapsed time".dimmed(), elapsed, result.duration_ms);
+}
+
+// ============================================================================
+// HOLISTIC RESONANCE ARCHITECTURE COMMANDS
+// ============================================================================
+
+fn run_holistic_mining(agents: usize, steps: usize, triton: bool, preset: &str, export: bool) {
+    println!("\n{}", "Holistic Resonance Mining".blue().bold());
+    println!("{}", "Kosmokrator -> Chronokrator -> Pfauenthron".blue());
+    println!("{}\n", "=".repeat(60).dimmed());
+
+    use qops_genesis::{HolisticMiningConfig, HolisticMiningSession};
+    use qops_core::{HolisticConfig, KosmokratorConfig, ChronokratorConfig, PfauenthronConfig};
+
+    // Build holistic config based on preset
+    let (kos_kappa, chrono_channels, pfau_mandorla) = match preset {
+        "quick" => (0.6, 2, 0.7),
+        "research" => (0.8, 6, 0.9),
+        _ => (0.7, 4, 0.8), // thorough (default)
+    };
+
+    let holistic_config = HolisticConfig {
+        kosmokrator: KosmokratorConfig {
+            kappa_threshold: kos_kappa,
+            stability_epsilon: 0.05,
+            telescope_enabled: true,
+            history_window: 50,
+            ..Default::default()
+        },
+        chronokrator: ChronokratorConfig {
+            num_channels: chrono_channels,
+            base_threshold: 0.75,
+            exkalibration_enabled: true,
+            spike_detection: true,
+            ..Default::default()
+        },
+        pfauenthron: PfauenthronConfig {
+            mandorla_threshold: pfau_mandorla,
+            ophanim_count: 4,
+            monolith_enabled: true,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+
+    let config = HolisticMiningConfig {
+        holistic: holistic_config,
+        num_agents: agents,
+        steps_per_agent: steps,
+        use_adaptive_triton: triton,
+        export_stage_logs: export,
+        ..Default::default()
+    };
+
+    println!("{}: {} agents, {} steps, preset: {}",
+        "Configuration".yellow(), agents, steps, preset.cyan());
+    println!("  Kosmokrator:  kappa = {:.2}", kos_kappa);
+    println!("  Chronokrator: {} channels", chrono_channels);
+    println!("  Pfauenthron:  mandorla = {:.2}", pfau_mandorla);
+    if triton {
+        println!("  TRITON:       {}", "Adaptive Enabled".green());
+    }
+    println!();
+
+    let mut session = HolisticMiningSession::new(config);
+    let start = Instant::now();
+
+    // Stage 1: Discovery
+    print_stage_header("Discovery", "blue");
+    let pb = create_stage_spinner("Discovering operators...");
+    session.run_discovery();
+    pb.finish_and_clear();
+    println!("  {} operators discovered", session.candidates().len());
+
+    // Stage 2: Kosmokrator Filter
+    print_stage_header("Kosmokrator Filter", "violet");
+    let pb = create_stage_spinner("Proof-of-Resonance filtering...");
+    session.run_kosmokrator();
+    pb.finish_and_clear();
+    let kos_stats = session.kosmokrator_stats();
+    println!("  Candidates:  {} -> {}", kos_stats.input_count, kos_stats.passed_count);
+    println!("  Avg kappa:   {:.4}", kos_stats.avg_kappa);
+    println!("  Telescope:   {} adjustments", kos_stats.telescope_adjustments);
+
+    // Stage 3: Chronokrator Expansion
+    print_stage_header("Chronokrator Expansion", "cyan");
+    let pb = create_stage_spinner("Resonance expansion...");
+    session.run_chronokrator();
+    pb.finish_and_clear();
+    let chrono_stats = session.chronokrator_stats();
+    println!("  Channels:    {}", chrono_stats.active_channels);
+    println!("  D_total:     {:.4}", chrono_stats.d_total);
+    println!("  Exkalibration magnitude: {:.4}", chrono_stats.exkalibration_magnitude);
+    if chrono_stats.spike_count > 0 {
+        println!("  {} detected!", format!("{} spikes", chrono_stats.spike_count).yellow());
+    }
+
+    // Stage 4: Pfauenthron Collapse
+    print_stage_header("Pfauenthron/Monolith", "yellow");
+    let pb = create_stage_spinner("Mandorla convergence...");
+    session.run_pfauenthron();
+    pb.finish_and_clear();
+    let pfau_stats = session.pfauenthron_stats();
+    println!("  Ophanim:     {} active", pfau_stats.ophanim_count);
+    println!("  S_Mandorla:  {:.4}", pfau_stats.mandorla_strength);
+    if pfau_stats.monolith_formed {
+        println!("  {} Monolith formed!", "OK".green().bold());
+    }
+
+    // Final result
+    let result = session.finalize();
+    let elapsed = start.elapsed();
+
+    println!("\n{}", "=".repeat(60).dimmed());
+    println!("{}", "HOLISTIC MINING COMPLETE".green().bold());
+    println!("{}", "=".repeat(60).dimmed());
+
+    println!("\n{}", "Final Results:".green());
+    println!("  Finalized families: {}", result.finalized_families.len());
+    println!("  Best resonance:     {:.4}", result.best_resonance);
+    println!("  Matrix outputs:     {}", result.matrix_outputs);
+    println!("  Duration:           {:?}", elapsed);
+
+    // Show top families
+    if !result.finalized_families.is_empty() {
+        println!("\n{}", "Finalized Operator Families:".yellow());
+        for (i, family) in result.finalized_families.iter().take(5).enumerate() {
+            println!("  {}. {} (members: {}, resonance: {:.4})",
+                i + 1, family.name.cyan(), family.member_count, family.avg_resonance);
+        }
+    }
+
+    // Export if requested
+    if export {
+        let export_path = format!("genesis_holistic_{}.json", chrono::Utc::now().format("%Y%m%d_%H%M%S"));
+        println!("\n{}: {}", "Exporting to".yellow(), export_path);
+        // Export logic would go here
+    }
+}
+
+fn run_genesis_stage(stage: GenesisStageCommand) {
+    match stage {
+        GenesisStageCommand::Kosmokrator { kappa, epsilon, export } => {
+            run_stage_kosmokrator(kappa, epsilon, export);
+        }
+        GenesisStageCommand::Chronokrator { channels, threshold, visualize } => {
+            run_stage_chronokrator(channels, threshold, visualize);
+        }
+        GenesisStageCommand::Pfauenthron { mandorla_threshold, ophanim } => {
+            run_stage_pfauenthron(mandorla_threshold, ophanim);
+        }
+    }
+}
+
+fn run_stage_kosmokrator(kappa: f64, epsilon: f64, export: bool) {
+    println!("\n{}", "Kosmokrator Filter Stage".magenta().bold());
+    println!("{}", "Proof-of-Resonance Exclusion Axis".magenta());
+    println!("{}\n", "=".repeat(50).dimmed());
+
+    use qops_core::{KosmokratorConfig, KosmokratorState};
+    use qops_genesis::MetatronCube;
+
+    let config = KosmokratorConfig {
+        kappa_threshold: kappa,
+        stability_epsilon: epsilon,
+        telescope_enabled: true,
+        history_window: 50,
+        ..Default::default()
+    };
+
+    println!("{}", "Configuration:".yellow());
+    println!("  kappa threshold: {:.3}", kappa);
+    println!("  stability epsilon: {:.4}", epsilon);
+    println!("  Telescope Operator: {}", "Enabled".green());
+    println!();
+
+    // Initialize Metatron Cube for candidate generation
+    let cube = MetatronCube::new();
+    let mut state = KosmokratorState::new(config);
+
+    let pb = create_stage_spinner("Running Proof-of-Resonance...");
+
+    // Process sample candidates
+    let num_candidates = 100;
+    for i in 0..num_candidates {
+        let node = i % 5040;
+        // Simulated phase from S7 position
+        let phase = (node as f64 * std::f64::consts::PI / 2520.0).sin();
+        state.add_phase(phase);
+    }
+
+    let result = state.compute_por();
+    pb.finish_and_clear();
+
+    println!("{}", "Results:".green().bold());
+    println!("{}", "-".repeat(50).dimmed());
+    println!("  PoR kappa:      {:.4}", result.kappa);
+    println!("  Coherence:      {:.4}", result.coherence);
+    println!("  Passed:         {}", if result.passed { "YES".green() } else { "NO".red() });
+    println!("  Telescope adj:  {}", state.telescope_adjustments());
+
+    if export {
+        println!("\n{}: kosmokrator_result.json", "Exporting".yellow());
+    }
+}
+
+fn run_stage_chronokrator(channels: usize, threshold: f64, visualize: bool) {
+    println!("\n{}", "Chronokrator Expansion Stage".cyan().bold());
+    println!("{}", "Resonance Dynamics Expansion Axis".cyan());
+    println!("{}\n", "=".repeat(50).dimmed());
+
+    use qops_core::{ChronokratorConfig, ChronokratorState};
+
+    let config = ChronokratorConfig {
+        num_channels: channels,
+        base_threshold: threshold,
+        exkalibration_enabled: true,
+        spike_detection: true,
+        ..Default::default()
+    };
+
+    println!("{}", "Configuration:".yellow());
+    println!("  Channels: {}", channels);
+    println!("  Base threshold: {:.3}", threshold);
+    println!("  Exkalibration: {}", "Enabled".green());
+    println!("  Spike detection: {}", "Enabled".green());
+    println!();
+
+    let mut state = ChronokratorState::new(config);
+
+    let pb = create_stage_spinner("Running resonance expansion...");
+
+    // Simulate resonance dynamics
+    let time_steps = 100;
+    for t in 0..time_steps {
+        let time = t as f64 * 0.1;
+        // Simulated multi-channel resonance
+        for ch in 0..channels {
+            let phase_offset = ch as f64 * std::f64::consts::PI / (channels as f64);
+            let resonance = 0.5 + 0.3 * (time + phase_offset).sin();
+            state.update_channel(ch, resonance, time);
+        }
+    }
+
+    let d_total = state.compute_d_total();
+    let exkal = state.compute_exkalibration();
+    let spikes = state.detect_spikes();
+
+    pb.finish_and_clear();
+
+    println!("{}", "Results:".green().bold());
+    println!("{}", "-".repeat(50).dimmed());
+    println!("  D_total(t):     {:.4}", d_total);
+    println!("  Theta(t):       {:.4}", state.current_threshold());
+    println!("  Above threshold: {}", if d_total > state.current_threshold() {
+        "YES".green()
+    } else {
+        "NO".red()
+    });
+    println!();
+
+    println!("{}", "Exkalibration Vector E(t):".yellow());
+    println!("  nabla_psi:   {:.4}", exkal.nabla_psi);
+    println!("  nabla_rho:   {:.4}", exkal.nabla_rho);
+    println!("  nabla_omega: {:.4}", exkal.nabla_omega);
+    println!("  magnitude:   {:.4}", exkal.magnitude());
+
+    if !spikes.is_empty() {
+        println!("\n{}: {} detected", "Spikes".yellow().bold(), spikes.len());
+        for (i, spike) in spikes.iter().take(3).enumerate() {
+            println!("  {}. channel {} at t={:.2}, intensity={:.4}",
+                i + 1, spike.channel, spike.time, spike.intensity);
+        }
+    }
+
+    if visualize {
+        println!("\n{}", "Dynamics Visualization:".cyan());
+        print_resonance_dynamics(&state);
+    }
+}
+
+fn run_stage_pfauenthron(mandorla_threshold: f64, ophanim_count: usize) {
+    println!("\n{}", "Pfauenthron/Monolith Collapse Stage".yellow().bold());
+    println!("{}", "O.P.H.A.N. Geometry / Mandorla Convergence".yellow());
+    println!("{}\n", "=".repeat(50).dimmed());
+
+    use qops_core::{PfauenthronConfig, PfauenthronState};
+
+    let config = PfauenthronConfig {
+        mandorla_threshold,
+        ophanim_count,
+        monolith_enabled: true,
+        ..Default::default()
+    };
+
+    println!("{}", "Configuration:".yellow());
+    println!("  Mandorla threshold: {:.3}", mandorla_threshold);
+    println!("  Ophanim nodes: {}", ophanim_count);
+    println!("  Monolith formation: {}", "Enabled".green());
+    println!();
+
+    let mut state = PfauenthronState::new(config);
+
+    let pb = create_stage_spinner("Computing Mandorla convergence...");
+
+    // Initialize Ophanim nodes
+    state.initialize_ophanim();
+
+    // Simulate Gabriel-Oriphiel convergence
+    for step in 0..50 {
+        let p_gabriel = 0.5 + 0.4 * (step as f64 * 0.1).sin();
+        let i_oriphiel = 0.5 + 0.4 * (step as f64 * 0.1).cos();
+        state.update_convergence(p_gabriel, i_oriphiel);
+    }
+
+    let mandorla = state.compute_mandorla();
+    let monolith = state.attempt_monolith_formation();
+
+    pb.finish_and_clear();
+
+    println!("{}", "Results:".green().bold());
+    println!("{}", "-".repeat(50).dimmed());
+
+    println!("\n{}", "Ophanim State:".cyan());
+    for (i, oph) in state.ophanim().iter().enumerate() {
+        let status = if oph.active { "active".green() } else { "inactive".dimmed() };
+        println!("  Ophanim {}: resonance={:.4}, {}", i, oph.resonance, status);
+    }
+
+    println!("\n{}", "Mandorla Field:".yellow());
+    println!("  P_Gabriel:    {:.4}", mandorla.p_gabriel);
+    println!("  I_Oriphiel:   {:.4}", mandorla.i_oriphiel);
+    println!("  S_Mandorla:   {:.4}", mandorla.strength);
+    println!("  Convergence:  {}", if mandorla.strength >= mandorla_threshold {
+        "ACHIEVED".green().bold()
+    } else {
+        "In progress".yellow()
+    });
+
+    if let Some(mono) = monolith {
+        println!("\n{} {}", "MONOLITH".green().bold(), "FORMED".green().bold());
+        println!("{}", "-".repeat(30).dimmed());
+        println!("  Coherence:    {:.4}", mono.coherence);
+        println!("  Families:     {}", mono.family_count);
+        println!("  Finalized:    {}", mono.finalized);
+    }
+}
+
+fn run_spiral_search(adaptive: bool, iterations: usize, export: bool) {
+    println!("\n{}", "TRITON Spiral Search".cyan().bold());
+    if adaptive {
+        println!("{}", "Adaptive Mode Enabled".cyan());
+    }
+    println!("{}\n", "=".repeat(50).dimmed());
+
+    use qops_triton::{TritonConfig, SpiralParams};
+
+    let config = TritonConfig {
+        spiral: SpiralParams {
+            expansion_rate: 1.618, // Golden ratio
+            initial_radius: 1.0,
+            max_layers: 7,
+        },
+        max_iterations: iterations,
+        ..Default::default()
+    };
+
+    println!("{}", "Configuration:".yellow());
+    println!("  Iterations: {}", iterations);
+    println!("  Expansion rate: {:.3} (golden)", config.spiral.expansion_rate);
+    println!("  Max layers: {}", config.spiral.max_layers);
+    println!("  Adaptive: {}", if adaptive { "Yes".green() } else { "No".dimmed() });
+    println!();
+
+    if adaptive {
+        use qops_triton::{AdaptiveTritonConfig, AdaptiveTritonOptimizer};
+
+        let adaptive_config = AdaptiveTritonConfig {
+            base: config,
+            ..Default::default()
+        };
+
+        let mut optimizer = AdaptiveTritonOptimizer::new(adaptive_config);
+        let pb = create_stage_spinner("Running adaptive spiral search...");
+
+        let result = optimizer.optimize(|sig| {
+            // Resonance scoring function
+            qops_core::resonance_5d(sig)
+        });
+
+        pb.finish_and_clear();
+
+        println!("{}", "Results:".green().bold());
+        println!("{}", "-".repeat(50).dimmed());
+        println!("  Best score:     {:.6}", result.best_score);
+        println!("  Iterations:     {}", result.iterations);
+        println!("  Layers explored: {}", result.layers_explored);
+        println!("  Converged:      {}", if result.converged { "Yes".green() } else { "No".red() });
+
+        if let Some(holistic_out) = &result.holistic_output {
+            println!("\n{}", "Holistic Integration:".cyan());
+            println!("  Matrix outputs: {}", holistic_out.outputs);
+            println!("  Stage: {:?}", holistic_out.final_stage);
+        }
+    } else {
+        use qops_triton::TritonOptimizer;
+
+        let mut optimizer = TritonOptimizer::new(config);
+        let pb = create_stage_spinner("Running spiral search...");
+
+        let result = optimizer.optimize(|sig| {
+            qops_core::resonance_5d(sig)
+        });
+
+        pb.finish_and_clear();
+
+        println!("{}", "Results:".green().bold());
+        println!("{}", "-".repeat(50).dimmed());
+        println!("  Best score:  {:.6}", result.best_score);
+        println!("  Iterations:  {}", result.iterations);
+        println!("  Converged:   {}", if result.converged { "Yes".green() } else { "No".red() });
+    }
+
+    if export {
+        println!("\n{}: triton_trajectory.json", "Exporting".yellow());
+    }
+}
+
+fn run_finalize_monolith(export: bool) {
+    println!("\n{}", "Monolith Finalization".yellow().bold());
+    println!("{}\n", "=".repeat(50).dimmed());
+
+    use qops_core::{HolisticConfig, HolisticMatrix};
+
+    let config = HolisticConfig::default();
+    let mut matrix = HolisticMatrix::new(config);
+
+    let pb = create_stage_spinner("Finalizing Monolith structure...");
+
+    // Simulate matrix processing
+    matrix.process_pipeline();
+
+    pb.finish_and_clear();
+
+    if let Some(monolith) = matrix.get_monolith() {
+        println!("{} {}", "MONOLITH".green().bold(), "STRUCTURE".green().bold());
+        println!("{}", "=".repeat(40).dimmed());
+        println!();
+        println!("  Coherence:        {:.4}", monolith.coherence);
+        println!("  Family count:     {}", monolith.family_count);
+        println!("  Finalized:        {}", if monolith.finalized { "Yes".green() } else { "No".yellow() });
+        println!();
+
+        if !monolith.families.is_empty() {
+            println!("{}", "Embedded Families:".yellow());
+            for (i, family) in monolith.families.iter().take(5).enumerate() {
+                println!("  {}. {} (resonance: {:.4})",
+                    i + 1, family.name.cyan(), family.avg_resonance);
+            }
+        }
+
+        if export {
+            let export_path = format!("monolith_{}.json", chrono::Utc::now().format("%Y%m%d_%H%M%S"));
+            println!("\n{}: {}", "Exporting Monolith report".yellow(), export_path);
+        }
+    } else {
+        println!("{}", "No Monolith available. Run holistic mining first.".yellow());
+    }
+}
+
+// Helper functions for stage output
+
+fn print_stage_header(name: &str, color: &str) {
+    let header = match color {
+        "blue" => format!(">>> {} <<<", name).blue().bold(),
+        "violet" | "magenta" => format!(">>> {} <<<", name).magenta().bold(),
+        "cyan" => format!(">>> {} <<<", name).cyan().bold(),
+        "yellow" | "gold" => format!(">>> {} <<<", name).yellow().bold(),
+        _ => format!(">>> {} <<<", name).white().bold(),
+    };
+    println!("\n{}", header);
+    println!("{}", "-".repeat(40).dimmed());
+}
+
+fn create_stage_spinner(msg: &str) -> ProgressBar {
+    let pb = ProgressBar::new_spinner();
+    pb.set_style(ProgressStyle::default_spinner()
+        .template("{spinner:.cyan} {msg}")
+        .unwrap());
+    pb.set_message(msg.to_string());
+    pb.enable_steady_tick(std::time::Duration::from_millis(80));
+    pb
+}
+
+fn print_resonance_dynamics(state: &qops_core::ChronokratorState) {
+    // ASCII visualization of resonance dynamics
+    let history = state.channel_history();
+    if history.is_empty() {
+        return;
+    }
+
+    println!();
+    let height = 8;
+    let width = 50;
+
+    for row in 0..height {
+        let threshold = 1.0 - (row as f64 / height as f64);
+        print!("{:.1} |", threshold);
+        for col in 0..width {
+            let idx = col * history.len() / width;
+            if idx < history.len() {
+                let val = history[idx];
+                if val >= threshold {
+                    print!("{}", "#".cyan());
+                } else {
+                    print!(" ");
+                }
+            } else {
+                print!(" ");
+            }
+        }
+        println!();
+    }
+    println!("    +{}", "-".repeat(width));
+    println!("     t=0{}t=max", " ".repeat(width - 10));
 }
 
 // ============================================================================

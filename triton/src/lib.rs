@@ -53,6 +53,7 @@ pub mod topology_bias;
 pub mod refinement;
 pub mod scoring;
 pub mod session;
+pub mod adaptive;
 
 // Re-exports
 pub use config::{TritonConfig, SpiralParams, TemperatureSchedule, RefinementConfig};
@@ -65,6 +66,15 @@ pub use topology_bias::{TopologyBias, BiasMode, NeighborhoodWeights};
 pub use refinement::{RefinementEngine, RefinementPass, RefinementResult};
 pub use scoring::{ScoringFunction, ScoreCache, CompositeScore};
 pub use session::{TritonSession, SessionConfig, SessionLog, SessionEvent};
+pub use adaptive::{
+    AdaptiveTritonConfig, AdaptiveTritonOptimizer, AdaptiveOptimizationResult,
+    AdaptiveRadiusConfig, AdaptiveRadiusController, AdaptiveRadiusStats,
+    DynamicCoolingConfig, DynamicCoolingController, DynamicCoolingStats,
+    TopologyBiasConfig, TopologyGaussianBias, GaussianCenter,
+    SpiralLayerMemory, LayerBest, LayerStats,
+    ConvergenceStabilizerConfig, ConvergenceStabilizer,
+    DriftCorrector, HolisticMatrixOutput,
+};
 
 /// TRITON version
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");

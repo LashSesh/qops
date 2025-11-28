@@ -36,6 +36,7 @@ pub mod pipeline;
 pub mod ledger;
 pub mod field;
 pub mod error;
+pub mod holistic;
 
 // Re-exports
 pub use signature::{Signature, Signature3D, Signature5D};
@@ -46,6 +47,21 @@ pub use pipeline::{GenerativePipeline, PipelineConfig, PipelineState, SimplePipe
 pub use ledger::{ResonanceLedger, LedgerEntry, ProofOfResonance, MemoryLedger};
 pub use field::{MandorlaField, FieldVector, ResonanceAttractor};
 pub use error::{QopsError, Result};
+pub use holistic::{
+    // Stages
+    GenesisStage,
+    // Kosmokrator
+    KosmokratorConfig, KosmokratorState, KosmokratorStats,
+    ProofOfResonanceResult, OperatorCandidate,
+    // Chronokrator
+    ChronokratorConfig, ChronokratorState, ChronokratorStats,
+    ResonanceChannel, ExkalibrationVector, SpikeEvent,
+    // Pfauenthron
+    PfauenthronConfig, PfauenthronState, PfauenthronStats,
+    Ophanim, MandorlaField as HolisticMandorlaField, Monolith, FinalizedFamily,
+    // Matrix
+    HolisticConfig, HolisticMatrix, HolisticStats, MatrixOutput,
+};
 
 /// QOPS version
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
