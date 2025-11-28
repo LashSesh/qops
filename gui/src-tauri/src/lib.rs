@@ -66,6 +66,23 @@ pub fn run() {
             commands::calibration::run_auto_tune,
             // System commands
             commands::system::get_system_info,
+            // Hypercube commands
+            commands::hypercube::compile_hypercube,
+            commands::hypercube::expand_cube_step,
+            commands::hypercube::get_hypercube_info,
+            commands::hypercube::hdag_execute,
+            commands::hypercube::get_hdag_info,
+            commands::hypercube::run_hypercube_session,
+            commands::hypercube::get_hypercube_presets,
+            // Slots commands
+            commands::slots::run_slots_engine,
+            commands::slots::slots_mine_sequence,
+            commands::slots::get_slots_info,
+            commands::slots::get_mining_strategies,
+            commands::slots::get_entropy_distributions,
+            commands::slots::slots_generate_artifacts,
+            commands::slots::run_hypercube_slots_mode,
+            commands::slots::get_slots_config_options,
         ])
         .setup(|app| {
             // Additional setup if needed

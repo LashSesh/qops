@@ -1,0 +1,22 @@
+[package]
+name = "qops-slots"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Quantum Slots Engine - Slot-based operator generation with entropy mapping"
+
+[dependencies]
+qops-core = { workspace = true }
+qops-hypercube = { path = "../hypercube" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+rand = { workspace = true }
+rand_distr = { workspace = true }
+uuid = { workspace = true }
+chrono = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+approx = { workspace = true }

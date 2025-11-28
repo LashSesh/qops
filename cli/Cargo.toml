@@ -19,6 +19,9 @@ qops-algorithms = { workspace = true }
 qops-research = { workspace = true }
 qops-seraphic = { workspace = true }
 qops-adapters = { workspace = true }
+qops-triton = { workspace = true }
+qops-hypercube = { workspace = true }
+qops-slots = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 anyhow = { workspace = true }

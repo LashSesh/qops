@@ -15,6 +15,8 @@ QOPS (Quantum Operator Processing System) is a Rust-based quantum computing rese
 - **TRITON Spiral Search**: Adaptive optimization with topology-aware exploration
 - **Genesis Pipeline**: S7 topology operator mining (5040 nodes)
 - **Quantum Pipeline**: Cube-13 topology algorithms (13 nodes)
+- **Hypercube-HDAG Framework**: 5D self-compiling cubes with hierarchical execution
+- **Quantum Slots Engine**: Entropy-driven slot evaluation with sequence mining
 - **Classical Quantum Algorithms**: Grover, Shor, QFT, QPE, VQE, QAOA
 - **Research Tools**: Benchmarking, experiments, analysis, visualization
 
@@ -102,6 +104,60 @@ Enhanced spiral search with adaptive features:
 - **Topology Gaussian Bias**: Guided exploration near best regions
 - **Layer Memory**: Best-score tracking per spiral layer
 - **Convergence Stabilizer**: Variance and plateau detection
+
+## Hypercube-HDAG 5D Framework
+
+The Hypercube framework provides self-compiling 5D cube structures with hierarchical DAG execution:
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    HYPERCUBE-HDAG FRAMEWORK                              │
+│                                                                          │
+│   5D Coordinates: (psi, rho, omega, chi, eta)                            │
+│                                                                          │
+│   ┌──────────────┐    ┌──────────────┐    ┌──────────────┐             │
+│   │     DK       │    │     SW       │    │     PI       │             │
+│   │ Double Kick  │    │  Swap Wave   │    │   Phase Int  │             │
+│   └──────────────┘    └──────────────┘    └──────────────┘             │
+│   ┌──────────────┐    ┌──────────────┐                                 │
+│   │     WT       │    │     Xi       │                                 │
+│   │Weight Trans  │    │ Compilation  │                                 │
+│   └──────────────┘    └──────────────┘                                 │
+│                                                                          │
+│   HDAG Pipeline: Input -> [Operators] -> Merge -> Compile -> Output     │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+- **5D Operators**: DK (Double Kick), SW (Swap Wave), PI (Phase Integration), WT (Weight Transform), Xi (Compilation)
+- **Expansion Rules**: Lattice, Resonance-Guided, TRITON, Operator-Driven, Hybrid
+- **HDAG Execution**: Hierarchical DAG for structured pipeline execution
+
+See [HYPERCUBE_INTEGRATION.md](HYPERCUBE_INTEGRATION.md) for details.
+
+## Quantum Slots Engine (QSlots)
+
+Entropy-driven slot evaluation with sequence mining capabilities:
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    QUANTUM SLOTS ENGINE                                  │
+│                                                                          │
+│   Symbols: [psi] [rho] [omega] [chi] [eta] [Star] [Diamond] [Circle]     │
+│   Weights:  0.4   0.3   0.3    0.05 -0.05   0.1    0.15     0.05        │
+│                                                                          │
+│   Entropy Distributions: Uniform | Normal | Exponential | Beta | Bimodal│
+│   Mining Strategies: Greedy | Stochastic | Beam | Evolutionary | TRITON │
+│                                                                          │
+│   Session: Spin -> Evaluate -> Mine -> Generate Artifacts               │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+- **Symbol-based evaluation** with resonance-aligned weights
+- **Configurable entropy** distributions for varied exploration
+- **Multiple mining strategies** including TRITON spiral search
+- **Hypercube integration** for artifact generation
+
+See [SLOTS_ENGINE_SPEC.md](SLOTS_ENGINE_SPEC.md) for details.
 
 ## Desktop Application
 
@@ -269,10 +325,20 @@ qops/
 ├── algorithms/     # Classical quantum algorithms
 ├── research/       # Benchmarking & experiments
 ├── seraphic/       # Calibration meta-algorithm
+├── hypercube/      # Hypercube-HDAG 5D Framework
+│   ├── cube.rs     # Self-compiling hypercube
+│   ├── hdag.rs     # Hierarchical DAG execution
+│   └── operators.rs # 5D operators (DK, SW, PI, WT, Xi)
+├── slots/          # Quantum Slots Engine (QSlots)
+│   ├── miner.rs    # Sequence mining strategies
+│   ├── entropy.rs  # Entropy distributions
+│   └── hypercube_integration.rs # Slots-hypercube bridge
 ├── gui/            # Tauri + SvelteKit desktop application
 │   ├── src-tauri/  # Rust backend with Tauri commands
 │   └── src/        # SvelteKit frontend
-│       └── routes/genesis/  # Genesis Miner page
+│       ├── routes/genesis/    # Genesis Miner page
+│       ├── routes/hypercube/  # Hypercube Studio
+│       └── routes/slots/      # Slots Dashboard
 └── cli/            # Command-line interface
 ```
 
@@ -291,6 +357,11 @@ qops/
 | `qops research <mode>` | Research tools |
 | `qops quantum` | Cube-13 algorithms |
 | `qops calibrate` | Seraphic calibration |
+| `qops hypercube compile` | Compile hypercube from seed |
+| `qops hypercube expand` | Expand hypercube step by step |
+| `qops hypercube exec-hdag` | Execute HDAG pipeline |
+| `qops slots run` | Run slots engine |
+| `qops slots sequence-mine` | Mine optimal sequences |
 
 ## Quantum Algorithms
 

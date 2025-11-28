@@ -9,6 +9,8 @@ members = [
     "research",
     "seraphic",
     "adapters",
+    "hypercube",
+    "slots",
     "cli",
 ]
 resolver = "2"
@@ -78,6 +80,8 @@ qops-research = { path = "research" }
 qops-seraphic = { path = "seraphic" }
 qops-adapters = { path = "adapters" }
 qops-triton = { path = "triton" }
+qops-hypercube = { path = "hypercube" }
+qops-slots = { path = "slots" }
 
 [profile.release]
 opt-level = 3
