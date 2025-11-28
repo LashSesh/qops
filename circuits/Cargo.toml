@@ -1,0 +1,19 @@
+[package]
+name = "qops-circuits"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Quantum Circuit Simulator for QOPS Research Framework"
+
+[dependencies]
+qops-core = { workspace = true }
+nalgebra = { workspace = true }
+num-complex = { workspace = true }
+rand = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
+rayon = { workspace = true }
+
+[dev-dependencies]
+approx = { workspace = true }

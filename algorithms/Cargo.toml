@@ -1,0 +1,20 @@
+[package]
+name = "qops-algorithms"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Classical Quantum Algorithms for QOPS Research Framework"
+
+[dependencies]
+qops-core = { workspace = true }
+qops-circuits = { path = "../circuits" }
+nalgebra = { workspace = true }
+num-complex = { workspace = true }
+rand = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
+rayon = { workspace = true }
+
+[dev-dependencies]
+approx = { workspace = true }

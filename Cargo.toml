@@ -3,6 +3,9 @@ members = [
     "core",
     "genesis",
     "quantum",
+    "circuits",
+    "algorithms",
+    "research",
     "seraphic",
     "adapters",
     "cli",
@@ -60,6 +63,9 @@ approx = "0.5"
 qops-core = { path = "core" }
 qops-genesis = { path = "genesis" }
 qops-quantum = { path = "quantum" }
+qops-circuits = { path = "circuits" }
+qops-algorithms = { path = "algorithms" }
+qops-research = { path = "research" }
 qops-seraphic = { path = "seraphic" }
 qops-adapters = { path = "adapters" }
 

@@ -1,0 +1,25 @@
+[package]
+name = "qops-research"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Research Tools, Benchmarking and Experiment Framework for QOPS"
+
+[dependencies]
+qops-core = { workspace = true }
+qops-circuits = { path = "../circuits" }
+qops-algorithms = { path = "../algorithms" }
+qops-quantum = { workspace = true }
+nalgebra = { workspace = true }
+num-complex = { workspace = true }
+rand = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+thiserror = { workspace = true }
+rayon = { workspace = true }
+uuid = { workspace = true }
+
+[dev-dependencies]
+approx = { workspace = true }
