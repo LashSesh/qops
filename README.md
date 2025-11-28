@@ -1,6 +1,6 @@
-# QOPS - Quantum Research Framework
+# QOPS - Quantum Operator Processing System
 
-**A comprehensive framework for quantum algorithm research, experimentation, and education.**
+**A comprehensive framework for quantum algorithm research, operator mining, and resonance-based optimization.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-1.70+-orange.svg)](https://www.rust-lang.org)
@@ -11,41 +11,134 @@
 QOPS (Quantum Operator Processing System) is a Rust-based quantum computing research framework that combines:
 
 - **Desktop GUI Application**: Modern Tauri-based interface with Svelte frontend
-- **Quantum Circuit Simulator**: Universal gate set, state vector simulation
-- **Classical Quantum Algorithms**: Grover, Shor, QFT, QPE, VQE, QAOA
-- **Research Tools**: Benchmarking, experiments, analysis, visualization
+- **Holistic Resonance Architecture**: Three-axis operator filtering and optimization
+- **TRITON Spiral Search**: Adaptive optimization with topology-aware exploration
 - **Genesis Pipeline**: S7 topology operator mining (5040 nodes)
 - **Quantum Pipeline**: Cube-13 topology algorithms (13 nodes)
-- **Seraphic Calibration**: Meta-algorithm for configuration optimization
+- **Classical Quantum Algorithms**: Grover, Shor, QFT, QPE, VQE, QAOA
+- **Research Tools**: Benchmarking, experiments, analysis, visualization
+
+## Holistic Resonance Architecture
+
+The core innovation of QOPS is the three-axis Holistic Resonance Architecture based on the Pfauenthron framework:
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    HOLISTIC RESONANCE PIPELINE                           │
+│                                                                          │
+│   ┌──────────────┐    ┌──────────────┐    ┌──────────────┐             │
+│   │  KOSMOKRATOR │ -> │ CHRONOKRATOR │ -> │ PFAUENTHRON  │             │
+│   │  (Exclusion) │    │  (Expansion) │    │  (Collapse)  │             │
+│   │              │    │              │    │              │             │
+│   │  PoR Filter  │    │   D_total    │    │   Mandorla   │             │
+│   │  Telescope   │    │ Exkalibration│    │   Monolith   │             │
+│   └──────────────┘    └──────────────┘    └──────────────┘             │
+│         │                    │                    │                     │
+│         v                    v                    v                     │
+│   ┌─────────────────────────────────────────────────────────┐          │
+│   │               M(t) = E(t)  if  PoR(t) ∧ D(t) > Θ(t)     │          │
+│   │                           else  ∅                        │          │
+│   └─────────────────────────────────────────────────────────┘          │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Kosmokrator (Exclusion Axis)
+
+Proof-of-Resonance filtering with coherence measurement:
+
+```
+κ(t) = |1/N · Σ exp(i·θⱼ(t))|
+```
+
+- **PoR Filter**: Excludes candidates below kappa threshold
+- **Telescope Operator**: Adaptive stability adjustment
+- **History Window**: Temporal coherence tracking
+
+### Chronokrator (Expansion Axis)
+
+Multi-channel resonance dynamics:
+
+```
+E(t) = ∇_{ψ,ρ,ω} Φ(t)   (Exkalibration Vector)
+D_total(t) > Θ(t)        (Threshold Condition)
+```
+
+- **Multi-Channel Tracking**: Parallel resonance streams
+- **Exkalibration Vector**: Gradient-based expansion
+- **Spike Detection**: Resonance anomaly identification
+
+### Pfauenthron (Collapse Axis)
+
+Mandorla convergence and Monolith formation:
+
+```
+S_Mandorla = P_Gabriel · I_Oriphiel
+```
+
+- **O.P.H.A.N. Geometry**: Ophanim node configuration
+- **Mandorla Field**: Gabriel-Oriphiel convergence
+- **Monolith Formation**: Finalized operator family embedding
+
+## TRITON Spiral Search Optimizer
+
+Enhanced spiral search with adaptive features:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    TRITON Adaptive Optimizer                  │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐       │
+│  │   Adaptive   │  │   Dynamic    │  │  Topology    │       │
+│  │    Radius    │  │   Cooling    │  │   Bias       │       │
+│  └──────────────┘  └──────────────┘  └──────────────┘       │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐       │
+│  │    Layer     │  │ Convergence  │  │    Drift     │       │
+│  │   Memory     │  │  Stabilizer  │  │  Corrector   │       │
+│  └──────────────┘  └──────────────┘  └──────────────┘       │
+└─────────────────────────────────────────────────────────────┘
+```
+
+- **Adaptive Radius**: Expansion on improvement, contraction otherwise
+- **Dynamic Cooling**: Temperature-based acceptance probability
+- **Topology Gaussian Bias**: Guided exploration near best regions
+- **Layer Memory**: Best-score tracking per spiral layer
+- **Convergence Stabilizer**: Variance and plateau detection
 
 ## Desktop Application
 
 QOPS includes a full-featured desktop GUI built with Tauri 2.0 and SvelteKit:
 
 ```
-+-------------------------------------------------------------------+
-|  QOPS - Quantum Operator Processing System         [_][O][X]       |
-+-------------------------------------------------------------------+
-| Dashboard | Circuits | Algorithms | Topology | Resonance | Settings|
-+-------------------------------------------------------------------+
-|                                                                     |
-|  Welcome to QOPS                                                   |
-|  ====================================================================|
-|                                                                     |
-|  [Run Grover]    [Run Shor]    [Build Circuit]    [Explore S7]     |
-|                                                                     |
-+-------------------------------------------------------------------+
++-----------------------------------------------------------------------+
+|  QOPS - Quantum Operator Processing System              [_][O][X]      |
++-----------------------------------------------------------------------+
+| Dashboard | Genesis Miner | Circuits | Algorithms | Topology | ...     |
++-----------------------------------------------------------------------+
+|                                                                         |
+|  GENESIS HOLISTIC MINER                                                |
+|  =====================                                                  |
+|                                                                         |
+|  [Discovery] -> [Kosmokrator] -> [Chronokrator] -> [Pfauenthron]       |
+|      ●             ●                 ○                 ○               |
+|                                                                         |
+|  Configuration:              Results:                                   |
+|  ┌─────────────────┐        ┌────────────────────────────────┐         |
+|  │ Preset: thorough│        │ Discovered:    150 candidates  │         |
+|  │ Agents: 10      │        │ After KOS:      45 candidates  │         |
+|  │ Steps:  50      │        │ After CHR:      12 candidates  │         |
+|  │ TRITON: Adaptive│        │ Families:        3 finalized   │         |
+|  └─────────────────┘        └────────────────────────────────┘         |
+|                                                                         |
+|  [Start Holistic Mining]                                               |
++-----------------------------------------------------------------------+
 ```
 
 **Features:**
+- Genesis Miner with animated stage pipeline (blue -> violet -> gold)
+- Resonance visualizer components (Heatmap, Spiral, Network)
 - Visual Circuit Builder with drag-and-drop gates
-- Algorithm Runner with real-time visualization
 - S7 Topology Explorer (5040 nodes)
-- Cube-13 Quantum Walk visualization
-- Seraphic Calibration interface
+- Export to JSON, CSV, Markdown
 - Dark quantum-themed UI
-
-See [docs/GUI_README.md](docs/GUI_README.md) for GUI documentation.
 
 ## Architecture
 
@@ -61,45 +154,16 @@ See [docs/GUI_README.md](docs/GUI_README.md) for GUI documentation.
 │         │                │                │                │               │
 │  ┌──────┴────────────────┴────────────────┴────────────────┴──────┐        │
 │  │                            Core                                  │        │
+│  │         (Holistic Resonance Architecture)                        │        │
 │  └──────┬────────────────┬────────────────┬────────────────┬──────┘        │
 │         │                │                │                │               │
 │  ┌──────┴──────┐  ┌──────┴──────┐  ┌──────┴──────┐  ┌──────┴──────┐        │
-│  │   Genesis   │  │   Quantum   │  │  Seraphic   │  │  Adapters   │        │
-│  │  (S7 5040)  │  │  (Cube 13)  │  │    (SCS)    │  │  (bridges)  │        │
+│  │   Genesis   │  │   TRITON    │  │   Quantum   │  │  Seraphic   │        │
+│  │  (S7 5040)  │  │  (Spiral)   │  │  (Cube 13)  │  │    (SCS)    │        │
 │  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────┘        │
 │                                                                              │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
-
-## Features
-
-### Quantum Circuit Simulator (`qops-circuits`)
-
-- **Qubits & States**: Single/multi-qubit states, Bloch sphere representation
-- **Universal Gate Set**: H, X, Y, Z, S, T, Rx, Ry, Rz, CNOT, CZ, Toffoli, etc.
-- **Circuit Building**: Fluent API for circuit construction
-- **Measurement**: Projective measurement, Pauli expectations, tomography
-- **Noise Models**: Depolarizing, amplitude damping, thermal relaxation
-
-### Quantum Algorithms (`qops-algorithms`)
-
-| Algorithm | Description | Speedup |
-|-----------|-------------|---------|
-| **Grover's Search** | Unstructured database search | O(√N) |
-| **Shor's Factorization** | Integer factorization | Exponential |
-| **QFT** | Quantum Fourier Transform | O(n²) vs O(n·2ⁿ) |
-| **QPE** | Quantum Phase Estimation | Eigenvalue finding |
-| **VQE** | Variational Quantum Eigensolver | Ground state energy |
-| **QAOA** | Quantum Approximate Optimization | Combinatorial opt. |
-| **Hamiltonian Simulation** | Time evolution | Trotter-Suzuki |
-
-### Research Tools (`qops-research`)
-
-- **Benchmarking**: Performance measurement, comparison tables
-- **Experiments**: Structured experiments with parameter sweeps
-- **Analysis**: Statistical summary, correlation, regression, t-tests
-- **Visualization**: Export to JSON, CSV, Matplotlib, Gnuplot, LaTeX
-- **Reports**: Generate Markdown/HTML/LaTeX reports
 
 ## Quick Start
 
@@ -120,135 +184,96 @@ cargo run --bin qops -- help
 # System information
 cargo run --bin qops -- info
 
-# Run Grover's algorithm
+# Run holistic mining pipeline
+cargo run --bin qops -- genesis holistic --agents 10 --steps 50 --preset thorough
+
+# Run individual stages
+cargo run --bin qops -- genesis stage kosmokrator --kappa 0.7 --export
+cargo run --bin qops -- genesis stage chronokrator --channels 4 --visualize
+cargo run --bin qops -- genesis stage pfauenthron --mandorla-threshold 0.8
+
+# Run TRITON spiral search
+cargo run --bin qops -- genesis spiral --adaptive --iterations 1000
+
+# Finalize Monolith
+cargo run --bin qops -- genesis finalize --export
+
+# Run quantum algorithms
 cargo run --bin qops -- algorithm grover --qubits 4 --target 5
-
-# Factor a number with Shor's algorithm
 cargo run --bin qops -- algorithm shor --number 15
-
-# Create and simulate a Bell state
-cargo run --bin qops -- circuit bell
-
-# Run VQE for ground state energy
 cargo run --bin qops -- algorithm vqe --qubits 2
 
-# Benchmark quantum algorithms
+# Benchmark performance
 cargo run --bin qops -- benchmark qft --qubits 2,3,4,5
-
-# Run scaling experiment
-cargo run --bin qops -- research experiment
 ```
 
 ### Programmatic Usage
 
 ```rust
-use qops_circuits::{Circuit, QuantumRegister, Gate, Measurement};
-use qops_algorithms::{Grover, Oracle};
+use qops_genesis::{HolisticMiningConfig, HolisticMiningSession, GenesisReporter, ReportFormat};
+use qops_core::{HolisticConfig, KosmokratorConfig, ChronokratorConfig, PfauenthronConfig};
 
-// Create a Bell state
-let circuit = Circuit::new(2)
-    .h(0)
-    .cnot(0, 1);
+// Configure holistic mining
+let config = HolisticMiningConfig {
+    holistic: HolisticConfig {
+        kosmokrator: KosmokratorConfig {
+            kappa_threshold: 0.7,
+            telescope_enabled: true,
+            ..Default::default()
+        },
+        chronokrator: ChronokratorConfig {
+            num_channels: 4,
+            exkalibration_enabled: true,
+            ..Default::default()
+        },
+        pfauenthron: PfauenthronConfig {
+            mandorla_threshold: 0.8,
+            monolith_enabled: true,
+            ..Default::default()
+        },
+        ..Default::default()
+    },
+    num_agents: 10,
+    steps_per_agent: 50,
+    use_adaptive_triton: true,
+    ..Default::default()
+};
 
-let mut reg = QuantumRegister::new(2);
-reg.apply_circuit(&circuit).unwrap();
+// Run the pipeline
+let mut session = HolisticMiningSession::new(config);
+session.run_discovery();
+session.run_kosmokrator();
+session.run_chronokrator();
+session.run_pfauenthron();
+let result = session.finalize();
 
-// Measure
-let stats = Measurement::measure_all(&reg, 1000);
-println!("Results: {:?}", stats.counts);
-
-// Run Grover's search
-let oracle = Oracle::marked_state(4, 5);
-let grover = Grover::new(4, oracle);
-let result = grover.run();
-println!("Found: {}", result.measured_state);
+// Generate report
+let reporter = GenesisReporter::new(result);
+let markdown = reporter.generate(ReportFormat::Markdown)?;
+println!("{}", markdown);
 ```
 
 ## Workspace Structure
 
 ```
 qops/
-├── core/           # Shared types, signatures, resonance framework
+├── core/           # Shared types, Holistic Resonance Architecture
+│   └── holistic.rs # Kosmokrator, Chronokrator, Pfauenthron stages
+├── triton/         # TRITON Spiral Search Optimizer
+│   └── adaptive.rs # Adaptive radius, cooling, topology bias
 ├── genesis/        # S7 topology operator mining (5040 nodes)
+│   ├── holistic_mining.rs  # Multi-stage mining session
+│   └── reporting.rs        # Export (JSON, CSV, MD)
 ├── quantum/        # Cube-13 quantum algorithms (13 nodes)
-├── circuits/       # Quantum circuit simulator (NEW)
-├── algorithms/     # Classical quantum algorithms (NEW)
-├── research/       # Benchmarking & experiments (NEW)
+├── circuits/       # Quantum circuit simulator
+├── algorithms/     # Classical quantum algorithms
+├── research/       # Benchmarking & experiments
 ├── seraphic/       # Calibration meta-algorithm
-├── adapters/       # Bridge modules
+├── gui/            # Tauri + SvelteKit desktop application
+│   ├── src-tauri/  # Rust backend with Tauri commands
+│   └── src/        # SvelteKit frontend
+│       └── routes/genesis/  # Genesis Miner page
 └── cli/            # Command-line interface
-```
-
-## Module Details
-
-### Core (`qops-core`)
-
-Foundational types shared across all modules:
-
-- **Signature System**: 3D (ψ, ρ, ω) and 5D (ψ, ρ, ω, χ, η) metrics
-- **Resonance**: R(v) = 0.4·ψ + 0.3·ρ + 0.3·ω + 0.05·χ - 0.05·η
-- **Topology Trait**: `ResonanceTopology` for graph structures
-- **Pipeline**: Generative processing abstraction
-- **Ledger**: Hash-chained result storage
-
-### Circuits (`qops-circuits`)
-
-Full quantum circuit simulation:
-
-```rust
-// Build a QFT circuit
-let qft = Circuit::qft(4);
-
-// Apply to register
-let mut reg = QuantumRegister::new(4);
-reg.apply_circuit(&qft)?;
-
-// Get measurement statistics
-let counts = reg.get_counts(1000);
-```
-
-### Algorithms (`qops-algorithms`)
-
-Ready-to-use quantum algorithms:
-
-```rust
-// Grover's search
-let grover = Grover::new(5, Oracle::marked_state(5, 17));
-let result = grover.run();
-
-// Shor's factorization
-let shor = Shor::new(21);
-let factors = shor.run();
-
-// VQE for Heisenberg model
-let hamiltonian = PauliSum::heisenberg(4, 1.0);
-let vqe = VQE::for_hamiltonian(hamiltonian);
-let ground_energy = vqe.run();
-
-// QAOA MaxCut
-let qaoa = QAOA::max_cut(edges, 3);
-let solution = qaoa.run();
-```
-
-### Research (`qops-research`)
-
-Tools for systematic research:
-
-```rust
-// Run scaling experiment
-let result = Experiment::new("grover_scaling")
-    .parameter(Parameter::new("qubits", vec![2, 3, 4, 5, 6]))
-    .repetitions(10)
-    .run(|params| { /* ... */ });
-
-// Benchmark comparison
-let suite = quantum_benchmarks::qft_scaling(&[2, 4, 6, 8]);
-println!("{}", suite.comparison_table());
-
-// Statistical analysis
-let mut analysis = Analysis::new();
-analysis.add_series("times", measurements);
-let fit = analysis.linear_regression("qubits", "times");
 ```
 
 ## CLI Commands
@@ -256,49 +281,43 @@ let fit = analysis.linear_regression("qubits", "times");
 | Command | Description |
 |---------|-------------|
 | `qops info` | Display system information |
+| `qops genesis holistic` | Run full holistic mining pipeline |
+| `qops genesis stage <stage>` | Run individual stage (kosmokrator/chronokrator/pfauenthron) |
+| `qops genesis spiral` | Run TRITON spiral search |
+| `qops genesis finalize` | Finalize Monolith structure |
 | `qops circuit <type>` | Simulate quantum circuits |
 | `qops algorithm <algo>` | Run quantum algorithms |
 | `qops benchmark <algo>` | Benchmark performance |
 | `qops research <mode>` | Research tools |
-| `qops genesis` | S7 operator mining |
 | `qops quantum` | Cube-13 algorithms |
 | `qops calibrate` | Seraphic calibration |
 
-## Performance
+## Quantum Algorithms
 
-State vector simulation scales exponentially with qubit count:
-
-| Qubits | States | Memory (approx) |
-|--------|--------|-----------------|
-| 10 | 1,024 | 16 KB |
-| 15 | 32,768 | 512 KB |
-| 20 | 1,048,576 | 16 MB |
-| 25 | 33,554,432 | 512 MB |
-| 30 | 1,073,741,824 | 16 GB |
-
-For larger systems, consider using noise models or approximate simulation.
-
-## Development
-
-### Running Tests
-
-```bash
-cargo test --workspace
-```
-
-### Building Documentation
-
-```bash
-cargo doc --workspace --open
-```
-
-### Release Build
-
-```bash
-cargo build --release
-```
+| Algorithm | Description | Speedup |
+|-----------|-------------|---------|
+| **Grover's Search** | Unstructured database search | O(√N) |
+| **Shor's Factorization** | Integer factorization | Exponential |
+| **QFT** | Quantum Fourier Transform | O(n²) vs O(n·2ⁿ) |
+| **QPE** | Quantum Phase Estimation | Eigenvalue finding |
+| **VQE** | Variational Quantum Eigensolver | Ground state energy |
+| **QAOA** | Quantum Approximate Optimization | Combinatorial opt. |
+| **Hamiltonian Simulation** | Time evolution | Trotter-Suzuki |
 
 ## Mathematical Background
+
+### Holistic Matrix Decision Logic
+
+```
+M(t) = E(t)  if  PoR(t) = true  ∧  D_total(t) > Θ(t)
+       ∅     otherwise
+```
+
+Where:
+- `PoR(t)`: Proof-of-Resonance passes kappa threshold
+- `D_total(t)`: Total resonance dynamics measure
+- `Θ(t)`: Adaptive threshold
+- `E(t)`: Exkalibration vector output
 
 ### Resonance Formula
 
@@ -315,12 +334,78 @@ Where:
 - χ (chi): Topological coherence (5D)
 - η (eta): Fluctuation measure (5D)
 
-### Double-Kick Operator
+### Kosmokrator Coherence
 
-Configuration evolution: T = Φ_V ∘ Φ_U
+```
+κ(t) = |1/N · Σⱼ exp(i·θⱼ(t))|
+```
 
-1. **Φ_U (Update Kick)**: Improves quality metric
-2. **Φ_V (Stabilization Kick)**: Improves stability and efficiency
+Phase coherence measure for Proof-of-Resonance filtering.
+
+### Mandorla Convergence
+
+```
+S_Mandorla = P_Gabriel · I_Oriphiel
+```
+
+Product of Gabriel (protective) and Oriphiel (integrative) components.
+
+## Visualization Components
+
+The GUI includes reusable Svelte components for resonance visualization:
+
+- **ResonanceHeatmap**: Color-coded resonance distribution (blue -> violet -> gold -> green)
+- **SpiralTrajectory**: TRITON spiral search path with score coloring
+- **FamilyNetwork**: Operator family relationship graph
+- **StageIndicator**: Animated pipeline stage progress
+
+## Performance
+
+State vector simulation scales exponentially with qubit count:
+
+| Qubits | States | Memory (approx) |
+|--------|--------|-----------------|
+| 10 | 1,024 | 16 KB |
+| 15 | 32,768 | 512 KB |
+| 20 | 1,048,576 | 16 MB |
+| 25 | 33,554,432 | 512 MB |
+| 30 | 1,073,741,824 | 16 GB |
+
+Genesis S7 topology contains 5040 nodes (7! permutations).
+
+## Development
+
+### Running Tests
+
+```bash
+# Run all tests
+cargo test --workspace
+
+# Run specific test modules
+cargo test -p qops-core holistic
+cargo test -p qops-triton adaptive
+cargo test -p qops-genesis holistic_mining
+```
+
+### Building Documentation
+
+```bash
+cargo doc --workspace --open
+```
+
+### Release Build
+
+```bash
+cargo build --release
+```
+
+### Running the GUI
+
+```bash
+cd gui
+npm install
+npm run tauri dev
+```
 
 ## Origins
 
@@ -329,11 +414,17 @@ QOPS fuses two systems:
 1. **Genesis Engine (MOGE)**: Metatronic Operator Genesis Engine
    - S7 permutation topology (7! = 5040 nodes)
    - Agent-based operator mining with resonance feedback
+   - Holistic Resonance Architecture (Kosmokrator/Chronokrator/Pfauenthron)
 
 2. **MetatronQSO**: Quantum State Operator Framework
    - 13-node Metatron Cube geometry
    - Variational quantum algorithms (VQE, QAOA)
    - Seraphic Calibration Shell
+
+3. **TRITON Optimizer**: Spiral Search System
+   - Golden ratio spiral expansion
+   - Adaptive temperature annealing
+   - Topology-aware exploration
 
 ## License
 
