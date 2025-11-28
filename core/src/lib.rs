@@ -39,7 +39,7 @@ pub mod error;
 
 // Re-exports
 pub use signature::{Signature, Signature3D, Signature5D};
-pub use resonance::{resonance, resonance_5d, resonance_3d, validate_invariant, ResonanceConfig};
+pub use resonance::{resonance, resonance_5d, resonance_3d, resonance_gradient, validate_invariant, ResonanceConfig};
 pub use topology::{ResonanceTopology, NodeSignature};
 pub use operators::{CalibrationOperator, Configuration, DoubleKickOperator, UpdateKick, StabilizationKick};
 pub use pipeline::{GenerativePipeline, PipelineConfig, PipelineState, SimplePipeline};

@@ -1,0 +1,141 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom scrollbar for dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1E293B;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #64748B;
+}
+
+/* Selection color */
+::selection {
+  background-color: rgba(99, 102, 241, 0.3);
+}
+
+/* Base styles */
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  overflow: hidden;
+}
+
+/* Code/monospace elements */
+code, pre, .mono {
+  font-family: 'JetBrains Mono', Consolas, monospace;
+}
+
+/* Quantum glow effect */
+.quantum-glow {
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+}
+
+/* Pulse animation for active elements */
+.pulse-quantum {
+  animation: pulse-quantum 2s ease-in-out infinite;
+}
+
+@keyframes pulse-quantum {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(99, 102, 241, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.8);
+  }
+}
+
+/* Card hover effect */
+.card-hover {
+  transition: all 0.2s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Button styles */
+.btn-primary {
+  @apply bg-quantum-primary hover:bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium transition-colors;
+}
+
+.btn-secondary {
+  @apply bg-surface-700 hover:bg-surface-600 text-white px-4 py-2 rounded-lg font-medium transition-colors;
+}
+
+.btn-accent {
+  @apply bg-quantum-accent hover:bg-cyan-600 text-white px-4 py-2 rounded-lg font-medium transition-colors;
+}
+
+/* Input styles */
+.input {
+  @apply bg-surface-800 border border-surface-600 text-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-quantum-primary;
+}
+
+/* Card styles */
+.card {
+  @apply bg-surface-800 border border-surface-700 rounded-xl p-4;
+}
+
+/* Sidebar link styles */
+.sidebar-link {
+  @apply flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-surface-700 transition-colors;
+}
+
+.sidebar-link.active {
+  @apply bg-quantum-primary/20 text-quantum-primary;
+}
+
+/* Progress bar */
+.progress-bar {
+  @apply h-2 bg-surface-700 rounded-full overflow-hidden;
+}
+
+.progress-bar-fill {
+  @apply h-full bg-quantum-primary transition-all duration-300;
+}
+
+/* Tooltip */
+.tooltip {
+  @apply absolute z-50 bg-surface-700 text-white text-sm px-3 py-2 rounded-lg shadow-lg;
+}
+
+/* Modal backdrop */
+.modal-backdrop {
+  @apply fixed inset-0 bg-black/60 backdrop-blur-sm z-40;
+}
+
+.modal-content {
+  @apply fixed inset-0 flex items-center justify-center z-50 p-4;
+}
+
+/* Gate colors for circuit builder */
+.gate-h { background-color: #6366F1; }
+.gate-x { background-color: #EF4444; }
+.gate-y { background-color: #10B981; }
+.gate-z { background-color: #F59E0B; }
+.gate-cnot { background-color: #8B5CF6; }
+.gate-t { background-color: #06B6D4; }
+.gate-s { background-color: #EC4899; }
+
+/* Probability bar */
+.prob-bar {
+  @apply h-6 bg-quantum-primary rounded transition-all duration-300;
+}
+
+/* Resonance indicator */
+.resonance-high { @apply text-quantum-success; }
+.resonance-medium { @apply text-quantum-warning; }
+.resonance-low { @apply text-quantum-error; }

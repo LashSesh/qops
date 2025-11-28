@@ -2,223 +2,247 @@
 //!
 //! A comprehensive CLI for quantum algorithm research and experimentation.
 //!
-//! Usage:
-//!   qops <command> [options]
-//!
-//! Commands:
-//!   genesis     - Run Genesis operator mining (S7 topology)
-//!   quantum     - Run quantum algorithms (Cube-13)
-//!   circuit     - Quantum circuit simulation
-//!   algorithm   - Classical quantum algorithms (Grover, Shor, QFT, etc.)
-//!   research    - Research tools (benchmarks, experiments)
-//!   calibrate   - Seraphic calibration shell
-//!   info        - System information
+//! Features:
+//! - Modern CLI with clap derive macros
+//! - Structured logging with tracing
+//! - Progress indicators
+//! - Colored output
 
-use std::env;
-use std::collections::HashMap;
+use clap::{Parser, Subcommand, Args, ValueEnum};
+use colored::Colorize;
+use indicatif::{ProgressBar, ProgressStyle};
+use tracing::{info, Level};
+use tracing_subscriber::FmtSubscriber;
+use std::time::Instant;
 
-fn main() {
-    let args: Vec<String> = env::args().collect();
+/// QOPS - Unified Quantum Operator Processing System
+///
+/// A comprehensive framework for quantum algorithm research, experimentation, and education.
+#[derive(Parser)]
+#[command(name = "qops")]
+#[command(author = "QOPS Unified Team")]
+#[command(version)]
+#[command(about = "Quantum Operator Processing System - Research Framework", long_about = None)]
+#[command(propagate_version = true)]
+struct Cli {
+    #[command(subcommand)]
+    command: Commands,
 
-    if args.len() < 2 {
-        print_usage();
-        return;
-    }
+    /// Enable verbose output
+    #[arg(short, long, global = true)]
+    verbose: bool,
 
-    match args[1].as_str() {
-        "genesis" => run_genesis(&args[2..]),
-        "quantum" => run_quantum(&args[2..]),
-        "circuit" => run_circuit(&args[2..]),
-        "algorithm" | "algo" => run_algorithm(&args[2..]),
-        "research" => run_research(&args[2..]),
-        "benchmark" | "bench" => run_benchmark(&args[2..]),
-        "calibrate" => run_calibrate(&args[2..]),
-        "info" => print_info(),
-        "help" | "--help" | "-h" => print_usage(),
-        "version" | "--version" | "-v" => print_version(),
-        _ => {
-            println!("Unknown command: {}", args[1]);
-            print_usage();
-        }
-    }
+    /// Output format
+    #[arg(long, global = true, default_value = "text")]
+    format: OutputFormat,
 }
 
-fn print_version() {
-    println!("QOPS v{}", env!("CARGO_PKG_VERSION"));
+#[derive(ValueEnum, Clone, Debug, Default)]
+enum OutputFormat {
+    #[default]
+    Text,
+    Json,
 }
 
-fn print_usage() {
-    println!(r#"
-╔═══════════════════════════════════════════════════════════════════════════════╗
-║            QOPS - Unified Quantum Operator Processing System                  ║
-║                   Quantum Research Framework v{}                          ║
-╚═══════════════════════════════════════════════════════════════════════════════╝
+#[derive(Subcommand)]
+enum Commands {
+    /// Display system information and capabilities
+    Info,
 
-USAGE:
-    qops <COMMAND> [OPTIONS]
+    /// Run Genesis operator mining on S7 topology (5040 nodes)
+    Genesis(GenesisArgs),
 
-COMMANDS:
-    genesis       Run Genesis operator mining on S7 topology (5040 nodes)
-    quantum       Run quantum algorithms on Cube-13 topology
-    circuit       Quantum circuit simulation and manipulation
-    algorithm     Classical quantum algorithms (Grover, Shor, QFT, QPE, VQE, QAOA)
-    research      Research tools: experiments, analysis, comparison
-    benchmark     Run benchmarks on quantum algorithms
-    calibrate     Seraphic calibration shell for configuration evolution
-    info          Display system information and capabilities
-    help          Show this help message
+    /// Run quantum algorithms on Cube-13 topology
+    Quantum(QuantumArgs),
 
-EXAMPLES:
-    qops genesis --agents 10 --steps 50
-    qops algorithm grover --qubits 4 --target 5
-    qops algorithm shor --number 15
-    qops circuit bell --qubits 2
-    qops benchmark qft --qubits 2,3,4,5
-    qops research experiment --name scaling
+    /// Quantum circuit simulation and manipulation
+    Circuit(CircuitArgs),
 
-For more information on a specific command, run:
-    qops <COMMAND> --help
-"#, env!("CARGO_PKG_VERSION"));
-}
+    /// Classical quantum algorithms (Grover, Shor, QFT, QPE, VQE, QAOA)
+    #[command(visible_alias = "algo")]
+    Algorithm(AlgorithmArgs),
 
-fn print_info() {
-    println!(r#"
-╔═══════════════════════════════════════════════════════════════════════════════╗
-║                     QOPS System Information                                   ║
-╚═══════════════════════════════════════════════════════════════════════════════╝
+    /// Research tools: experiments, analysis, comparison
+    Research(ResearchArgs),
 
-VERSION: {}
+    /// Run benchmarks on quantum algorithms
+    #[command(visible_alias = "bench")]
+    Benchmark(BenchmarkArgs),
 
-MODULES:
-  ┌─────────────────────────────────────────────────────────────────────────────┐
-  │ Core       │ Shared types, signatures, resonance framework                  │
-  │ Genesis    │ S7 topology operator mining (5040 permutation nodes)           │
-  │ Quantum    │ Cube-13 quantum algorithms (VQE, QAOA, quantum walks)          │
-  │ Circuits   │ Quantum circuit simulator (gates, registers, measurement)      │
-  │ Algorithms │ Classical algorithms (Grover, Shor, QFT, QPE, VQE, QAOA)       │
-  │ Research   │ Benchmarking, experiments, analysis, visualization             │
-  │ Seraphic   │ Meta-algorithm for fixpoint-directed calibration               │
-  │ Adapters   │ Bridges between Genesis and Quantum pipelines                  │
-  └─────────────────────────────────────────────────────────────────────────────┘
-
-TOPOLOGY:
-  • Genesis Pipeline: S7 permutation group (7! = 5040 nodes)
-  • Quantum Pipeline: Metatron Cube-13 (1 center + 6 hexagon + 6 cube)
-
-CAPABILITIES:
-  ✓ Universal quantum gate set (H, X, Y, Z, CNOT, Toffoli, etc.)
-  ✓ State vector simulation (up to ~20 qubits)
-  ✓ Grover's search algorithm
-  ✓ Shor's factorization algorithm
-  ✓ Quantum Fourier Transform (QFT)
-  ✓ Quantum Phase Estimation (QPE)
-  ✓ Variational Quantum Eigensolver (VQE)
-  ✓ QAOA for combinatorial optimization
-  ✓ Hamiltonian simulation (Trotter decomposition)
-  ✓ Noise models (depolarizing, amplitude damping)
-  ✓ Benchmarking and performance analysis
-  ✓ Experiment framework with reproducibility
-
-LICENSE: MIT
-"#, env!("CARGO_PKG_VERSION"));
+    /// Seraphic calibration shell for configuration evolution
+    Calibrate(CalibrateArgs),
 }
 
 // ============================================================================
 // GENESIS COMMAND
 // ============================================================================
 
-fn run_genesis(args: &[String]) {
-    println!("\n🔮 Genesis Pipeline - S7 Operator Mining\n");
+#[derive(Args)]
+struct GenesisArgs {
+    /// Number of agents for swarm traversal
+    #[arg(short, long, default_value_t = 5)]
+    agents: usize,
 
-    let mut agents = 5;
-    let mut steps = 20;
+    /// Steps per agent
+    #[arg(short, long, default_value_t = 20)]
+    steps: usize,
 
-    let mut i = 0;
-    while i < args.len() {
-        match args[i].as_str() {
-            "--agents" | "-a" => {
-                if i + 1 < args.len() {
-                    agents = args[i + 1].parse().unwrap_or(5);
-                    i += 1;
-                }
-            }
-            "--steps" | "-s" => {
-                if i + 1 < args.len() {
-                    steps = args[i + 1].parse().unwrap_or(20);
-                    i += 1;
-                }
-            }
-            "--help" | "-h" => {
-                println!("Usage: qops genesis [OPTIONS]");
-                println!();
-                println!("Options:");
-                println!("  --agents, -a <N>   Number of agents (default: 5)");
-                println!("  --steps, -s <N>    Steps per agent (default: 20)");
-                return;
-            }
-            _ => {}
-        }
-        i += 1;
-    }
+    /// Traversal strategy
+    #[arg(long, default_value = "balanced")]
+    strategy: TraversalStrategyArg,
+}
 
-    println!("Configuration: {} agents, {} steps each", agents, steps);
-    println!();
+#[derive(ValueEnum, Clone, Debug, Default)]
+enum TraversalStrategyArg {
+    #[default]
+    Balanced,
+    Explorative,
+    Exploitative,
+    Random,
+    /// TRITON spiral search optimizer
+    Triton,
+    /// Hybrid TRITON + Evolution
+    HybridTriton,
+    /// Swarm mining
+    Swarm,
+}
 
-    use qops_genesis::{TraversalEngine, AgentConfig, TraversalStrategy};
+fn run_genesis(args: GenesisArgs) {
+    println!("\n{}", "Genesis Pipeline - S7 Operator Mining".cyan().bold());
+    println!("{}\n", "=".repeat(50).dimmed());
 
-    let mut engine = TraversalEngine::new();
-    let config = AgentConfig {
-        max_steps: steps,
-        strategy: TraversalStrategy::Balanced,
+    use qops_genesis::{MiningSession, MiningConfig, MiningStrategy};
+
+    let strategy = match args.strategy {
+        TraversalStrategyArg::Balanced => MiningStrategy::Balanced,
+        TraversalStrategyArg::Explorative => MiningStrategy::Explorative,
+        TraversalStrategyArg::Exploitative => MiningStrategy::Exploitative,
+        TraversalStrategyArg::Random => MiningStrategy::Random,
+        TraversalStrategyArg::Triton => MiningStrategy::Triton,
+        TraversalStrategyArg::HybridTriton => MiningStrategy::HybridTritonEvolution,
+        TraversalStrategyArg::Swarm => MiningStrategy::Swarm,
+    };
+
+    let config = MiningConfig {
+        strategy,
+        num_agents: args.agents,
+        steps_per_agent: args.steps,
+        extract_families: true,
         ..Default::default()
     };
 
-    println!("Mining operators on S7 topology...\n");
-    let artefacts = engine.run_swarm(agents, config);
+    println!("{}: {} agents, {} steps, {:?} strategy",
+        "Configuration".yellow(),
+        args.agents, args.steps, args.strategy);
+    println!();
 
-    println!("Results:");
-    println!("─────────────────────────────────────────");
-    for (i, artefact) in artefacts.iter().enumerate() {
-        let status = if artefact.is_mandorla { "✓" } else { "○" };
-        println!(
-            "  {} Artefact {:2}: resonance = {:.4}",
-            status, i + 1, artefact.resonance
-        );
+    let pb = ProgressBar::new_spinner();
+    pb.set_style(ProgressStyle::default_spinner()
+        .template("{spinner:.green} [{elapsed_precise}] Mining in progress...")
+        .unwrap());
+    pb.enable_steady_tick(std::time::Duration::from_millis(100));
+
+    let mut session = MiningSession::new(config);
+    let start = Instant::now();
+
+    let result = session.mine();
+
+    pb.finish_and_clear();
+    let elapsed = start.elapsed();
+
+    println!("{}", "Results:".green().bold());
+    println!("{}", "-".repeat(50).dimmed());
+
+    // Show statistics
+    println!("  Total artefacts: {}", result.artefacts.len());
+    println!("  Mandorla count:  {}", result.mandorla_count);
+    println!("  Avg resonance:   {:.4}", result.stats.avg_resonance);
+    println!("  Std resonance:   {:.4}", result.stats.std_resonance);
+    println!("  Unique nodes:    {}", result.stats.unique_nodes);
+    println!();
+
+    // Show top artefacts
+    println!("{}", "Top Artefacts:".green());
+    let mut sorted_artefacts = result.artefacts.clone();
+    sorted_artefacts.sort_by(|a, b| b.resonance.partial_cmp(&a.resonance).unwrap());
+
+    for (i, artefact) in sorted_artefacts.iter().take(10).enumerate() {
+        let status = if artefact.is_mandorla() {
+            "M".green()
+        } else {
+            "o".dimmed()
+        };
+        println!("  {} {:2}. resonance = {:.4}", status, i + 1, artefact.resonance);
     }
 
-    if let Some(best) = engine.best_artefact() {
-        println!();
-        println!("Best artefact: resonance = {:.4}", best.resonance);
+    // Show families if any
+    if !result.families.is_empty() {
+        println!("\n{}: {} discovered", "Operator Families".yellow(), result.families.len());
+        for (i, family) in result.families.iter().take(5).enumerate() {
+            println!("  {}. {} ({} members, avg res: {:.4})",
+                i + 1, family.name, family.members().len(), family.avg_resonance());
+        }
     }
+
+    // Show TRITON result if available
+    if let Some(triton) = &result.triton_result {
+        println!("\n{}", "TRITON Result:".cyan());
+        println!("  Best score: {:.4}", triton.best_score);
+        println!("  Iterations: {}", triton.iterations);
+        println!("  Converged:  {}", if triton.converged { "Yes".green() } else { "No".red() });
+    }
+
+    if let Some(best) = &result.best_artefact {
+        println!("\n{}: resonance = {:.4}",
+            "Best artefact".green().bold(), best.resonance);
+    }
+
+    println!("\n{}: {:?} ({} ms)", "Elapsed time".dimmed(), elapsed, result.duration_ms);
 }
 
 // ============================================================================
-// QUANTUM COMMAND (Legacy Cube-13)
+// QUANTUM COMMAND
 // ============================================================================
 
-fn run_quantum(args: &[String]) {
-    let mode = args.first().map(|s| s.as_str()).unwrap_or("walk");
+#[derive(Args)]
+struct QuantumArgs {
+    #[command(subcommand)]
+    mode: QuantumMode,
+}
 
-    match mode {
-        "--walk" | "walk" => run_quantum_walk(),
-        "--vqe" | "vqe" => run_legacy_vqe(),
-        "--qaoa" | "qaoa" => run_legacy_qaoa(),
-        "--help" | "-h" => {
-            println!("Usage: qops quantum <MODE>");
-            println!();
-            println!("Modes:");
-            println!("  walk   Continuous-time quantum walk on Cube-13");
-            println!("  vqe    VQE on Metatron graph");
-            println!("  qaoa   QAOA MaxCut");
-        }
-        _ => {
-            println!("Unknown mode: {}. Use: walk, vqe, qaoa", mode);
-        }
+#[derive(Subcommand)]
+enum QuantumMode {
+    /// Continuous-time quantum walk on Cube-13
+    Walk {
+        /// Time points to evaluate
+        #[arg(short, long, default_value = "0.5,1.0,2.0,5.0")]
+        times: String,
+    },
+    /// VQE on Metatron graph
+    Vqe {
+        /// Number of ansatz layers
+        #[arg(short, long, default_value_t = 2)]
+        layers: usize,
+    },
+    /// QAOA MaxCut
+    Qaoa {
+        /// Number of QAOA layers
+        #[arg(short, long, default_value_t = 3)]
+        layers: usize,
+    },
+}
+
+fn run_quantum(args: QuantumArgs) {
+    match args.mode {
+        QuantumMode::Walk { times } => run_quantum_walk(&times),
+        QuantumMode::Vqe { layers } => run_legacy_vqe(layers),
+        QuantumMode::Qaoa { layers } => run_legacy_qaoa(layers),
     }
 }
 
-fn run_quantum_walk() {
-    println!("\n🌀 Continuous-Time Quantum Walk on Cube-13\n");
+fn run_quantum_walk(times_str: &str) {
+    println!("\n{}", "Continuous-Time Quantum Walk on Cube-13".cyan().bold());
+    println!("{}\n", "=".repeat(50).dimmed());
 
     use qops_quantum::{MetatronGraph, MetatronHamiltonian, QuantumState};
     use qops_quantum::quantum_walk::ContinuousQuantumWalk;
@@ -228,47 +252,59 @@ fn run_quantum_walk() {
     let qw = ContinuousQuantumWalk::new(hamiltonian);
 
     let initial = QuantumState::basis_state(0).unwrap();
-    println!("Initial state: |0⟩ (center node)");
+    println!("{}: |0> (center node)", "Initial state".yellow());
     println!();
 
-    println!("Time evolution:");
-    println!("─────────────────────────────────────────");
-    for t in [0.5, 1.0, 2.0, 5.0] {
+    let times: Vec<f64> = times_str.split(',')
+        .filter_map(|s| s.trim().parse().ok())
+        .collect();
+
+    println!("{}", "Time evolution:".green());
+    println!("{}", "-".repeat(50).dimmed());
+    for t in times {
         let evolved = qw.evolve(&initial, t);
         let probs = evolved.probabilities();
 
-        println!(
-            "  t={:.1}: P(center)={:.3}, P(hex)={:.3}, P(cube)={:.3}",
-            t,
-            probs[0],
+        println!("  t={:5.2}: P(center)={:.3}, P(hex)={:.3}, P(cube)={:.3}",
+            t, probs[0],
             probs[1..7].iter().sum::<f64>(),
-            probs[7..13].iter().sum::<f64>()
-        );
+            probs[7..13].iter().sum::<f64>());
     }
 }
 
-fn run_legacy_vqe() {
-    println!("\n⚛️ VQE on Metatron Graph\n");
+fn run_legacy_vqe(layers: usize) {
+    println!("\n{}", "VQE on Metatron Graph".cyan().bold());
+    println!("{}\n", "=".repeat(50).dimmed());
 
     use qops_quantum::{MetatronGraph, MetatronHamiltonian};
     use qops_quantum::vqa::VQE;
 
     let graph = MetatronGraph::new();
     let hamiltonian = MetatronHamiltonian::from_graph(&graph);
-    let vqe = VQE::new(hamiltonian, 2);
+    let vqe = VQE::new(hamiltonian, layers);
 
-    println!("Running optimization...");
+    println!("{}: {} layers", "Configuration".yellow(), layers);
+    println!();
+
+    let pb = ProgressBar::new_spinner();
+    pb.set_style(ProgressStyle::default_spinner()
+        .template("{spinner:.green} {msg}")
+        .unwrap());
+    pb.set_message("Running optimization...");
+
     let result = vqe.run();
 
-    println!();
-    println!("Results:");
+    pb.finish_and_clear();
+
+    println!("{}", "Results:".green().bold());
     println!("  Ground energy: {:.6}", result.ground_energy);
     println!("  Iterations: {}", result.iterations);
-    println!("  Converged: {}", result.converged);
+    println!("  Converged: {}", if result.converged { "Yes".green() } else { "No".red() });
 }
 
-fn run_legacy_qaoa() {
-    println!("\n🔄 QAOA MaxCut\n");
+fn run_legacy_qaoa(layers: usize) {
+    println!("\n{}", "QAOA MaxCut".cyan().bold());
+    println!("{}\n", "=".repeat(50).dimmed());
 
     use qops_quantum::vqa::QAOA;
 
@@ -281,10 +317,10 @@ fn run_legacy_qaoa() {
         vec![2, 3, 4],
     ];
 
-    let qaoa = QAOA::new(3);
+    let qaoa = QAOA::new(layers);
     let result = qaoa.run_maxcut(&adjacency);
 
-    println!("Results:");
+    println!("{}", "Results:".green().bold());
     println!("  Best cost: {:.2}", result.best_cost);
     println!("  Approximation ratio: {:.4}", result.approximation_ratio);
 }
@@ -293,31 +329,47 @@ fn run_legacy_qaoa() {
 // CIRCUIT COMMAND
 // ============================================================================
 
-fn run_circuit(args: &[String]) {
-    let mode = args.first().map(|s| s.as_str()).unwrap_or("bell");
+#[derive(Args)]
+struct CircuitArgs {
+    #[command(subcommand)]
+    circuit_type: CircuitType,
+}
 
-    match mode {
-        "bell" => run_bell_circuit(),
-        "ghz" => run_ghz_circuit(args),
-        "qft" => run_qft_circuit(args),
-        "random" => run_random_circuit(args),
-        "--help" | "-h" => {
-            println!("Usage: qops circuit <TYPE> [OPTIONS]");
-            println!();
-            println!("Types:");
-            println!("  bell             Create and simulate Bell state");
-            println!("  ghz --qubits N   Create GHZ state");
-            println!("  qft --qubits N   Quantum Fourier Transform");
-            println!("  random --qubits N --depth D   Random circuit");
-        }
-        _ => {
-            println!("Unknown circuit type: {}. Use --help for options.", mode);
-        }
+#[derive(Subcommand)]
+enum CircuitType {
+    /// Create and simulate Bell state
+    Bell,
+    /// Create GHZ state
+    Ghz {
+        #[arg(short, long, default_value_t = 3)]
+        qubits: usize,
+    },
+    /// Quantum Fourier Transform
+    Qft {
+        #[arg(short, long, default_value_t = 3)]
+        qubits: usize,
+    },
+    /// Random circuit
+    Random {
+        #[arg(short, long, default_value_t = 3)]
+        qubits: usize,
+        #[arg(short, long, default_value_t = 5)]
+        depth: usize,
+    },
+}
+
+fn run_circuit(args: CircuitArgs) {
+    match args.circuit_type {
+        CircuitType::Bell => run_bell_circuit(),
+        CircuitType::Ghz { qubits } => run_ghz_circuit(qubits),
+        CircuitType::Qft { qubits } => run_qft_circuit(qubits),
+        CircuitType::Random { qubits, depth } => run_random_circuit(qubits, depth),
     }
 }
 
 fn run_bell_circuit() {
-    println!("\n🔔 Bell State Circuit\n");
+    println!("\n{}", "Bell State Circuit".cyan().bold());
+    println!("{}\n", "=".repeat(50).dimmed());
 
     use qops_circuits::{Circuit, QuantumRegister, Measurement};
 
@@ -325,21 +377,23 @@ fn run_bell_circuit() {
     let mut reg = QuantumRegister::new(2);
     reg.apply_circuit(&circuit).unwrap();
 
-    println!("Circuit: H(0) → CNOT(0,1)");
-    println!("State: {}", reg);
+    println!("{}: H(0) -> CNOT(0,1)", "Circuit".yellow());
+    println!("{}: {}", "State".yellow(), reg);
     println!();
 
     let stats = Measurement::measure_all(&reg, 1000);
-    println!("Measurement statistics (1000 shots):");
+    println!("{} (1000 shots):", "Measurement statistics".green());
     for (outcome, count) in &stats.counts {
-        println!("  |{}⟩: {} ({:.1}%)", outcome, count, *count as f64 / 10.0);
+        let bar_len = (*count as f64 / 10.0) as usize;
+        let bar = "#".repeat(bar_len.min(50));
+        println!("  |{}>: {:4} {:50} ({:.1}%)",
+            outcome, count, bar.cyan(), *count as f64 / 10.0);
     }
 }
 
-fn run_ghz_circuit(args: &[String]) {
-    let qubits = parse_arg(args, "--qubits", 3);
-
-    println!("\n🌟 GHZ State ({} qubits)\n", qubits);
+fn run_ghz_circuit(qubits: usize) {
+    println!("\n{}", format!("GHZ State ({} qubits)", qubits).cyan().bold());
+    println!("{}\n", "=".repeat(50).dimmed());
 
     use qops_circuits::{Circuit, QuantumRegister, Measurement};
 
@@ -347,54 +401,50 @@ fn run_ghz_circuit(args: &[String]) {
     let mut reg = QuantumRegister::new(qubits);
     reg.apply_circuit(&circuit).unwrap();
 
-    println!("Circuit depth: {}", circuit.depth());
-    println!("Gate count: {}", circuit.gate_count());
+    println!("{}: {}", "Circuit depth".yellow(), circuit.depth());
+    println!("{}: {}", "Gate count".yellow(), circuit.gate_count());
     println!();
 
     let stats = Measurement::measure_all(&reg, 1000);
-    println!("Measurement statistics (1000 shots):");
+    println!("{} (1000 shots):", "Measurement statistics".green());
     let mut sorted: Vec<_> = stats.counts.iter().collect();
     sorted.sort_by(|a, b| b.1.cmp(a.1));
     for (outcome, count) in sorted.iter().take(5) {
-        println!("  |{}⟩: {} ({:.1}%)", outcome, count, **count as f64 / 10.0);
+        println!("  |{}>: {} ({:.1}%)", outcome, count, **count as f64 / 10.0);
     }
 }
 
-fn run_qft_circuit(args: &[String]) {
-    let qubits = parse_arg(args, "--qubits", 3);
+fn run_qft_circuit(qubits: usize) {
+    println!("\n{}", format!("Quantum Fourier Transform ({} qubits)", qubits).cyan().bold());
+    println!("{}\n", "=".repeat(50).dimmed());
 
-    println!("\n📊 Quantum Fourier Transform ({} qubits)\n", qubits);
-
-    use qops_circuits::{Circuit, QuantumRegister};
+    use qops_circuits::{Circuit, QuantumRegister, Gate};
     use qops_algorithms::QuantumFourierTransform;
 
     let qft = QuantumFourierTransform::new(qubits);
     let circuit = qft.build_circuit();
 
-    println!("Circuit depth: {}", circuit.depth());
-    println!("Gate count: {}", circuit.gate_count());
+    println!("{}: {}", "Circuit depth".yellow(), circuit.depth());
+    println!("{}: {}", "Gate count".yellow(), circuit.gate_count());
 
     let mut reg = QuantumRegister::new(qubits);
-    // Start with |1⟩ state
-    reg.apply_single_gate(&qops_circuits::Gate::x(), 0).unwrap();
-    println!("\nInitial state: |1⟩");
+    reg.apply_single_gate(&Gate::x(), 0).unwrap();
+    println!("\n{}: |1>", "Initial state".yellow());
 
     qft.apply(&mut reg).unwrap();
 
-    println!("After QFT:");
+    println!("{}", "\nAfter QFT:".green());
     let probs = reg.state.probabilities();
     for (i, p) in probs.iter().enumerate().take(8) {
         if *p > 0.001 {
-            println!("  |{:0width$b}⟩: {:.4}", i, p, width = qubits);
+            println!("  |{:0width$b}>: {:.4}", i, p, width = qubits);
         }
     }
 }
 
-fn run_random_circuit(args: &[String]) {
-    let qubits = parse_arg(args, "--qubits", 3);
-    let depth = parse_arg(args, "--depth", 5);
-
-    println!("\n🎲 Random Circuit ({} qubits, depth {})\n", qubits, depth);
+fn run_random_circuit(qubits: usize, depth: usize) {
+    println!("\n{}", format!("Random Circuit ({} qubits, depth {})", qubits, depth).cyan().bold());
+    println!("{}\n", "=".repeat(50).dimmed());
 
     use qops_circuits::{Circuit, Gate, QuantumRegister, Measurement};
     use rand::Rng;
@@ -422,17 +472,16 @@ fn run_random_circuit(args: &[String]) {
     let mut reg = QuantumRegister::new(qubits);
     reg.apply_circuit(&circuit).unwrap();
 
-    println!("Generated circuit:");
-    println!("  Depth: {}", circuit.depth());
-    println!("  Gates: {}", circuit.gate_count());
+    println!("{}: {}", "Actual depth".yellow(), circuit.depth());
+    println!("{}: {}", "Total gates".yellow(), circuit.gate_count());
     println!();
 
     let stats = Measurement::measure_all(&reg, 1000);
-    println!("Measurement statistics:");
+    println!("{}", "Measurement statistics:".green());
     let mut sorted: Vec<_> = stats.counts.iter().collect();
     sorted.sort_by(|a, b| b.1.cmp(a.1));
     for (outcome, count) in sorted.iter().take(5) {
-        println!("  |{}⟩: {} ({:.1}%)", outcome, count, **count as f64 / 10.0);
+        println!("  |{}>: {} ({:.1}%)", outcome, count, **count as f64 / 10.0);
     }
 }
 
@@ -440,147 +489,179 @@ fn run_random_circuit(args: &[String]) {
 // ALGORITHM COMMAND
 // ============================================================================
 
-fn run_algorithm(args: &[String]) {
-    let algo = args.first().map(|s| s.as_str()).unwrap_or("help");
+#[derive(Args)]
+struct AlgorithmArgs {
+    #[command(subcommand)]
+    algorithm: AlgorithmType,
+}
 
-    match algo {
-        "grover" => run_grover(args),
-        "shor" => run_shor(args),
-        "qft" => run_qft_circuit(args),
-        "qpe" => run_qpe(args),
-        "vqe" => run_vqe(args),
-        "qaoa" => run_qaoa(args),
-        "--help" | "-h" | "help" => {
-            println!("Usage: qops algorithm <ALGORITHM> [OPTIONS]");
-            println!();
-            println!("Algorithms:");
-            println!("  grover  --qubits N --target T   Grover's search");
-            println!("  shor    --number N              Shor's factorization");
-            println!("  qft     --qubits N              Quantum Fourier Transform");
-            println!("  qpe     --qubits N --phase P    Quantum Phase Estimation");
-            println!("  vqe     --qubits N              Variational Quantum Eigensolver");
-            println!("  qaoa    --qubits N --layers L   QAOA MaxCut");
-        }
-        _ => {
-            println!("Unknown algorithm: {}. Use --help for options.", algo);
-        }
+#[derive(Subcommand)]
+enum AlgorithmType {
+    /// Grover's search algorithm
+    Grover {
+        #[arg(short, long, default_value_t = 3)]
+        qubits: usize,
+        #[arg(short, long, default_value_t = 5)]
+        target: usize,
+        #[arg(short, long, default_value_t = 1000)]
+        shots: usize,
+    },
+    /// Shor's factorization algorithm
+    Shor {
+        #[arg(short, long, default_value_t = 15)]
+        number: u64,
+    },
+    /// Quantum Phase Estimation
+    Qpe {
+        #[arg(short, long, default_value_t = 4)]
+        qubits: usize,
+        #[arg(short, long, default_value_t = 0.25)]
+        phase: f64,
+    },
+    /// Variational Quantum Eigensolver
+    Vqe {
+        #[arg(short, long, default_value_t = 2)]
+        qubits: usize,
+        #[arg(short, long, default_value_t = 2)]
+        layers: usize,
+    },
+    /// QAOA - Quantum Approximate Optimization
+    Qaoa {
+        #[arg(short, long, default_value_t = 4)]
+        qubits: usize,
+        #[arg(short, long, default_value_t = 2)]
+        layers: usize,
+    },
+}
+
+fn run_algorithm(args: AlgorithmArgs) {
+    match args.algorithm {
+        AlgorithmType::Grover { qubits, target, shots } => run_grover(qubits, target, shots),
+        AlgorithmType::Shor { number } => run_shor(number),
+        AlgorithmType::Qpe { qubits, phase } => run_qpe(qubits, phase),
+        AlgorithmType::Vqe { qubits, layers } => run_vqe(qubits, layers),
+        AlgorithmType::Qaoa { qubits, layers } => run_qaoa(qubits, layers),
     }
 }
 
-fn run_grover(args: &[String]) {
-    let qubits = parse_arg(args, "--qubits", 3);
-    let target = parse_arg(args, "--target", 5);
-    let shots = parse_arg(args, "--shots", 1000);
-
-    println!("\n🔍 Grover's Search Algorithm\n");
-    println!("Configuration:");
-    println!("  Qubits: {}", qubits);
-    println!("  Target: |{:0width$b}⟩ ({})", target, target, width = qubits);
-    println!("  Search space: {} states", 1 << qubits);
-    println!();
+fn run_grover(qubits: usize, target: usize, shots: usize) {
+    println!("\n{}", "Grover's Search Algorithm".cyan().bold());
+    println!("{}\n", "=".repeat(50).dimmed());
 
     use qops_algorithms::{Grover, Oracle};
+
+    println!("{}", "Configuration:".yellow());
+    println!("  Qubits: {}", qubits);
+    println!("  Target: |{:0width$b}> ({})", target, target, width = qubits);
+    println!("  Search space: {} states", 1 << qubits);
+    println!();
 
     let oracle = Oracle::marked_state(qubits, target);
     let grover = Grover::new(qubits, oracle);
 
-    println!("Optimal iterations: {}", grover.optimal_iterations());
-    println!("Theoretical success probability: {:.2}%",
+    println!("{}: {}", "Optimal iterations".yellow(), grover.optimal_iterations());
+    println!("{}: {:.2}%",
+        "Theoretical success".yellow(),
         grover.theoretical_success_probability() * 100.0);
     println!();
 
-    println!("Running {} measurement shots...", shots);
+    let pb = ProgressBar::new(shots as u64);
+    pb.set_style(ProgressStyle::default_bar()
+        .template("{spinner:.green} [{bar:40.cyan/blue}] {pos}/{len}")
+        .unwrap());
+
     let result = grover.run_with_shots(shots);
+    pb.finish_and_clear();
 
-    println!();
-    println!("Results:");
-    println!("  Measured state: |{:0width$b}⟩", result.measured_state, width = qubits);
+    println!("{}", "Results:".green().bold());
+    println!("  Measured state: |{:0width$b}>", result.measured_state, width = qubits);
     println!("  Success probability: {:.2}%", result.success_probability * 100.0);
-    println!("  Is solution: {}", if result.is_solution { "✓ Yes" } else { "✗ No" });
+    println!("  Is solution: {}",
+        if result.is_solution { "Yes".green() } else { "No".red() });
 
-    println!();
-    println!("Top measurements:");
+    println!("\n{}", "Top measurements:".green());
     let mut sorted: Vec<_> = result.counts.iter().collect();
     sorted.sort_by(|a, b| b.1.cmp(a.1));
     for (outcome, count) in sorted.iter().take(5) {
-        let marker = if usize::from_str_radix(outcome, 2).unwrap_or(0) == target { "←" } else { "" };
-        println!("  |{}⟩: {} ({:.1}%) {}", outcome, count, **count as f64 / shots as f64 * 100.0, marker);
+        let is_target = usize::from_str_radix(outcome, 2).unwrap_or(0) == target;
+        let marker = if is_target { " <-- target".green() } else { "".normal() };
+        println!("  |{}>: {} ({:.1}%){}",
+            outcome, count, **count as f64 / shots as f64 * 100.0, marker);
     }
 }
 
-fn run_shor(args: &[String]) {
-    let number = parse_arg(args, "--number", 15) as u64;
-
-    println!("\n🔢 Shor's Factorization Algorithm\n");
-    println!("Number to factor: {}", number);
-    println!();
+fn run_shor(number: u64) {
+    println!("\n{}", "Shor's Factorization Algorithm".cyan().bold());
+    println!("{}\n", "=".repeat(50).dimmed());
 
     use qops_algorithms::{Shor, FactorizationMethod};
+
+    println!("{}: {}", "Number to factor".yellow(), number);
+    println!();
+
+    let pb = ProgressBar::new_spinner();
+    pb.set_style(ProgressStyle::default_spinner()
+        .template("{spinner:.green} {msg}")
+        .unwrap());
+    pb.set_message("Running factorization...");
 
     let shor = Shor::new(number)
         .with_method(FactorizationMethod::Simulated)
         .with_max_attempts(10);
 
-    println!("Running factorization...");
     let result = shor.run();
+    pb.finish_and_clear();
 
-    println!();
-    println!("Results:");
+    println!("{}", "Results:".green().bold());
     if result.success {
-        println!("  ✓ Factorization successful!");
-        println!("  Factors: {} = {}", number, result.factors.iter()
+        println!("  {} Factorization successful!", "OK".green());
+        let factors_str = result.factors.iter()
             .map(|f| f.to_string())
             .collect::<Vec<_>>()
-            .join(" × "));
+            .join(" x ");
+        println!("  Factors: {} = {}", number, factors_str.cyan());
         if let Some(period) = result.period {
             println!("  Period found: r = {}", period);
         }
         println!("  Attempts: {}", result.attempts);
     } else {
-        println!("  ✗ Factorization failed after {} attempts", result.attempts);
+        println!("  {} Factorization failed after {} attempts", "FAIL".red(), result.attempts);
     }
 }
 
-fn run_qpe(args: &[String]) {
-    let precision = parse_arg(args, "--qubits", 4);
-    let phase: f64 = args.iter()
-        .position(|a| a == "--phase")
-        .and_then(|i| args.get(i + 1))
-        .and_then(|s| s.parse().ok())
-        .unwrap_or(0.25);
-
-    println!("\n📐 Quantum Phase Estimation\n");
-    println!("Configuration:");
-    println!("  Precision qubits: {}", precision);
-    println!("  True phase: {:.4} (= {:.4}π)", phase, phase * 2.0);
-    println!();
+fn run_qpe(precision: usize, phase: f64) {
+    println!("\n{}", "Quantum Phase Estimation".cyan().bold());
+    println!("{}\n", "=".repeat(50).dimmed());
 
     use qops_algorithms::QuantumPhaseEstimation;
+
+    println!("{}", "Configuration:".yellow());
+    println!("  Precision qubits: {}", precision);
+    println!("  True phase: {:.4} (= {:.4}pi)", phase, phase * 2.0);
+    println!();
 
     let qpe = QuantumPhaseEstimation::for_gate(precision, &qops_circuits::Gate::t()).unwrap();
     let result = qpe.estimate_known_phase(phase, 1000);
 
-    println!("Results:");
+    println!("{}", "Results:".green().bold());
     println!("  Estimated phase: {:.4}", result.phase);
     println!("  Error: {:.6}", (result.phase - phase).abs());
     println!("  Error bound: {:.6}", result.error_bound());
     println!("  Confidence: {:.1}%", result.confidence * 100.0);
 }
 
-fn run_vqe(args: &[String]) {
-    let qubits = parse_arg(args, "--qubits", 2);
-    let layers = parse_arg(args, "--layers", 2);
+fn run_vqe(qubits: usize, layers: usize) {
+    println!("\n{}", "Variational Quantum Eigensolver".cyan().bold());
+    println!("{}\n", "=".repeat(50).dimmed());
 
-    println!("\n⚗️ Variational Quantum Eigensolver\n");
-    println!("Configuration:");
+    use qops_algorithms::{VQE, VQEConfig, vqe::PauliSum, Ansatz};
+
+    println!("{}", "Configuration:".yellow());
     println!("  Qubits: {}", qubits);
     println!("  Ansatz layers: {}", layers);
     println!();
 
-    use qops_algorithms::{VQE, VQEConfig, vqe::PauliSum, Ansatz};
-
     let hamiltonian = PauliSum::transverse_ising(qubits, 1.0, 0.5);
-
     let config = VQEConfig {
         num_qubits: qubits,
         ansatz: Ansatz::RealAmplitudes,
@@ -590,50 +671,58 @@ fn run_vqe(args: &[String]) {
     };
 
     let vqe = VQE::new(config, hamiltonian);
-    println!("Parameters: {}", vqe.num_parameters());
-    println!("Running optimization...\n");
+    println!("{}: {}", "Parameters".yellow(), vqe.num_parameters());
+
+    let pb = ProgressBar::new_spinner();
+    pb.set_style(ProgressStyle::default_spinner()
+        .template("{spinner:.green} Running optimization...")
+        .unwrap());
 
     let result = vqe.run();
+    pb.finish_and_clear();
 
-    println!("Results:");
+    println!("\n{}", "Results:".green().bold());
     println!("  Ground energy: {:.6}", result.energy);
     println!("  Evaluations: {}", result.num_evaluations);
-    println!("  Converged: {}", result.converged);
+    println!("  Converged: {}", if result.converged { "Yes".green() } else { "No".red() });
     println!("  Final variance: {:.6}", result.variance);
 }
 
-fn run_qaoa(args: &[String]) {
-    let qubits = parse_arg(args, "--qubits", 4);
-    let layers = parse_arg(args, "--layers", 2);
+fn run_qaoa(qubits: usize, layers: usize) {
+    println!("\n{}", "QAOA - Quantum Approximate Optimization".cyan().bold());
+    println!("{}\n", "=".repeat(50).dimmed());
 
-    println!("\n🔄 QAOA - Quantum Approximate Optimization\n");
-    println!("Configuration:");
+    use qops_algorithms::{QAOA, QAOAConfig};
+
+    println!("{}", "Configuration:".yellow());
     println!("  Qubits: {}", qubits);
     println!("  Layers (p): {}", layers);
     println!();
 
-    use qops_algorithms::{QAOA, QAOAConfig};
-
-    // Create simple ring graph
+    // Create ring graph
     let edges: Vec<(usize, usize)> = (0..qubits)
         .map(|i| (i, (i + 1) % qubits))
         .collect();
 
-    println!("Problem: MaxCut on {}-node ring graph", qubits);
-    println!("Edges: {:?}", edges);
+    println!("{}: MaxCut on {}-node ring graph", "Problem".yellow(), qubits);
+    println!("  Edges: {:?}", edges);
     println!();
 
     let qaoa = QAOA::max_cut(edges, layers);
-    println!("Running optimization...\n");
+
+    let pb = ProgressBar::new_spinner();
+    pb.set_style(ProgressStyle::default_spinner()
+        .template("{spinner:.green} Running optimization...")
+        .unwrap());
 
     let result = qaoa.run();
+    pb.finish_and_clear();
 
-    println!("Results:");
+    println!("{}", "Results:".green().bold());
     println!("  Best solution: {:?}", result.best_solution);
     println!("  Cut value: {:.0}", result.best_cost);
 
-    println!();
-    println!("Top solutions:");
+    println!("\n{}", "Top solutions:".green());
     let mut sorted: Vec<_> = result.solution_counts.iter().collect();
     sorted.sort_by(|a, b| b.1.cmp(a.1));
     for (solution, count) in sorted.iter().take(5) {
@@ -645,40 +734,48 @@ fn run_qaoa(args: &[String]) {
 // RESEARCH COMMAND
 // ============================================================================
 
-fn run_research(args: &[String]) {
-    let mode = args.first().map(|s| s.as_str()).unwrap_or("help");
+#[derive(Args)]
+struct ResearchArgs {
+    #[command(subcommand)]
+    mode: ResearchMode,
+}
 
-    match mode {
-        "experiment" => run_experiment(args),
-        "analyze" => run_analyze(args),
-        "compare" => run_compare(args),
-        "--help" | "-h" | "help" => {
-            println!("Usage: qops research <MODE> [OPTIONS]");
-            println!();
-            println!("Modes:");
-            println!("  experiment  Run structured experiments");
-            println!("  analyze     Analyze experiment results");
-            println!("  compare     Compare algorithm performance");
-        }
-        _ => {
-            println!("Unknown mode: {}. Use --help.", mode);
-        }
+#[derive(Subcommand)]
+enum ResearchMode {
+    /// Run structured experiments
+    Experiment {
+        /// Experiment name
+        #[arg(short, long, default_value = "grover_scaling")]
+        name: String,
+    },
+    /// Analyze experiment results
+    Analyze,
+    /// Compare algorithm performance
+    Compare,
+}
+
+fn run_research(args: ResearchArgs) {
+    match args.mode {
+        ResearchMode::Experiment { name } => run_experiment(&name),
+        ResearchMode::Analyze => run_analyze(),
+        ResearchMode::Compare => run_compare(),
     }
 }
 
-fn run_experiment(args: &[String]) {
-    println!("\n📊 Running Experiment\n");
+fn run_experiment(name: &str) {
+    println!("\n{}", "Running Experiment".cyan().bold());
+    println!("{}\n", "=".repeat(50).dimmed());
 
     use qops_research::{Experiment, Parameter};
     use std::collections::HashMap;
 
-    let experiment = Experiment::new("grover_scaling")
+    let experiment = Experiment::new(name)
         .description("Grover algorithm scaling with problem size")
         .parameter(Parameter::new("qubits", vec![2, 3, 4, 5]))
         .repetitions(3);
 
-    println!("Experiment: Grover Scaling Study");
-    println!("Total runs: {}", 4 * 3);
+    println!("{}: {}", "Experiment".yellow(), name);
+    println!("{}: {}", "Total runs".yellow(), 4 * 3);
     println!();
 
     let result = experiment.run(|params| {
@@ -698,26 +795,27 @@ fn run_experiment(args: &[String]) {
         data
     });
 
-    println!("Results:");
-    println!("─────────────────────────────────────────");
+    println!("{}", "Results:".green().bold());
+    println!("{}", "-".repeat(50).dimmed());
     let means = result.mean_by_param("success_prob", "qubits");
     for (qubits, mean) in means {
         println!("  {} qubits: {:.2}% success", qubits.trim_matches('"'), mean * 100.0);
     }
 }
 
-fn run_analyze(_args: &[String]) {
-    println!("\n📈 Analysis Tools\n");
+fn run_analyze() {
+    println!("\n{}", "Analysis Tools".cyan().bold());
+    println!("{}\n", "=".repeat(50).dimmed());
     println!("Run an experiment first, then analyze the results.");
     println!("Use: qops research experiment");
 }
 
-fn run_compare(_args: &[String]) {
-    println!("\n⚖️ Algorithm Comparison\n");
+fn run_compare() {
+    println!("\n{}", "Algorithm Comparison".cyan().bold());
+    println!("{}\n", "=".repeat(50).dimmed());
 
     use qops_research::Comparison;
 
-    // Compare random data for demonstration
     let algo_a = vec![1.2, 1.3, 1.1, 1.4, 1.2];
     let algo_b = vec![0.8, 0.9, 0.7, 0.85, 0.9];
 
@@ -731,79 +829,79 @@ fn run_compare(_args: &[String]) {
 // BENCHMARK COMMAND
 // ============================================================================
 
-fn run_benchmark(args: &[String]) {
-    let algo = args.first().map(|s| s.as_str()).unwrap_or("help");
+#[derive(Args)]
+struct BenchmarkArgs {
+    #[command(subcommand)]
+    benchmark: BenchmarkType,
+}
 
-    match algo {
-        "grover" => benchmark_grover(args),
-        "qft" => benchmark_qft(args),
-        "simulation" => benchmark_simulation(args),
-        "--help" | "-h" | "help" => {
-            println!("Usage: qops benchmark <ALGORITHM> [OPTIONS]");
-            println!();
-            println!("Algorithms:");
-            println!("  grover      --qubits 2,3,4,5    Benchmark Grover's algorithm");
-            println!("  qft         --qubits 2,3,4,5    Benchmark QFT");
-            println!("  simulation  --qubits 2,3,4,5    Benchmark state vector simulation");
-        }
-        _ => {
-            println!("Unknown benchmark: {}. Use --help.", algo);
-        }
+#[derive(Subcommand)]
+enum BenchmarkType {
+    /// Benchmark Grover's algorithm
+    Grover {
+        /// Qubit counts (comma-separated)
+        #[arg(short, long, default_value = "2,3,4")]
+        qubits: String,
+    },
+    /// Benchmark QFT
+    Qft {
+        /// Qubit counts (comma-separated)
+        #[arg(short, long, default_value = "2,3,4,5")]
+        qubits: String,
+    },
+    /// Benchmark state vector simulation
+    Simulation {
+        /// Qubit counts (comma-separated)
+        #[arg(short, long, default_value = "4,6,8,10")]
+        qubits: String,
+    },
+}
+
+fn run_benchmark(args: BenchmarkArgs) {
+    match args.benchmark {
+        BenchmarkType::Grover { qubits } => benchmark_grover(&qubits),
+        BenchmarkType::Qft { qubits } => benchmark_qft(&qubits),
+        BenchmarkType::Simulation { qubits } => benchmark_simulation(&qubits),
     }
 }
 
-fn benchmark_grover(args: &[String]) {
-    let qubits_str = args.iter()
-        .position(|a| a == "--qubits")
-        .and_then(|i| args.get(i + 1))
-        .map(|s| s.as_str())
-        .unwrap_or("2,3,4");
+fn benchmark_grover(qubits_str: &str) {
+    println!("\n{}", "Grover Algorithm Benchmark".cyan().bold());
+    println!("{}\n", "=".repeat(50).dimmed());
+
+    use qops_research::benchmark::quantum_benchmarks;
 
     let qubits: Vec<usize> = qubits_str.split(',')
         .filter_map(|s| s.trim().parse().ok())
         .collect();
-
-    println!("\n⏱️ Grover Algorithm Benchmark\n");
-
-    use qops_research::benchmark::quantum_benchmarks;
 
     let suite = quantum_benchmarks::grover_scaling(&qubits, 100);
     println!("{}", suite.comparison_table());
 }
 
-fn benchmark_qft(args: &[String]) {
-    let qubits_str = args.iter()
-        .position(|a| a == "--qubits")
-        .and_then(|i| args.get(i + 1))
-        .map(|s| s.as_str())
-        .unwrap_or("2,3,4,5");
+fn benchmark_qft(qubits_str: &str) {
+    println!("\n{}", "QFT Benchmark".cyan().bold());
+    println!("{}\n", "=".repeat(50).dimmed());
+
+    use qops_research::benchmark::quantum_benchmarks;
 
     let qubits: Vec<usize> = qubits_str.split(',')
         .filter_map(|s| s.trim().parse().ok())
         .collect();
-
-    println!("\n⏱️ QFT Benchmark\n");
-
-    use qops_research::benchmark::quantum_benchmarks;
 
     let suite = quantum_benchmarks::qft_scaling(&qubits);
     println!("{}", suite.comparison_table());
 }
 
-fn benchmark_simulation(args: &[String]) {
-    let qubits_str = args.iter()
-        .position(|a| a == "--qubits")
-        .and_then(|i| args.get(i + 1))
-        .map(|s| s.as_str())
-        .unwrap_or("4,6,8,10");
+fn benchmark_simulation(qubits_str: &str) {
+    println!("\n{}", "State Vector Simulation Benchmark".cyan().bold());
+    println!("{}\n", "=".repeat(50).dimmed());
+
+    use qops_research::benchmark::quantum_benchmarks;
 
     let qubits: Vec<usize> = qubits_str.split(',')
         .filter_map(|s| s.trim().parse().ok())
         .collect();
-
-    println!("\n⏱️ State Vector Simulation Benchmark\n");
-
-    use qops_research::benchmark::quantum_benchmarks;
 
     let suite = quantum_benchmarks::simulation_scaling(&qubits, 10);
     println!("{}", suite.comparison_table());
@@ -813,10 +911,20 @@ fn benchmark_simulation(args: &[String]) {
 // CALIBRATE COMMAND
 // ============================================================================
 
-fn run_calibrate(args: &[String]) {
-    println!("\n🌀 Seraphic Calibration Shell\n");
+#[derive(Args)]
+struct CalibrateArgs {
+    /// Number of calibration steps
+    #[arg(short, long, default_value_t = 10)]
+    steps: usize,
 
-    let steps = parse_arg(args, "--steps", 10);
+    /// Target resonance value
+    #[arg(short, long, default_value_t = 0.85)]
+    target: f64,
+}
+
+fn run_calibrate(args: CalibrateArgs) {
+    println!("\n{}", "Seraphic Calibration Shell".cyan().bold());
+    println!("{}\n", "=".repeat(50).dimmed());
 
     use qops_seraphic::SeraphicCalibrator;
     use qops_core::Signature3D;
@@ -827,40 +935,122 @@ fn run_calibrate(args: &[String]) {
         Signature3D::new(0.5, 0.5, 0.5),
     );
 
-    println!("Running {} calibration steps...\n", steps);
+    println!("{}: {} steps, target resonance = {:.2}",
+        "Configuration".yellow(), args.steps, args.target);
+    println!();
 
-    let results = calibrator.run(steps);
+    let pb = ProgressBar::new(args.steps as u64);
+    pb.set_style(ProgressStyle::default_bar()
+        .template("{spinner:.green} [{bar:40.cyan/blue}] {pos}/{len} steps")
+        .unwrap());
 
-    println!("Step │   ψ    │   ρ    │   ω    │ Accept │ CRI");
-    println!("─────┼────────┼────────┼────────┼────────┼─────");
+    let results = calibrator.run(args.steps);
+
+    for _ in &results {
+        pb.inc(1);
+    }
+    pb.finish_and_clear();
+
+    println!("{}", "Step |   psi  |   rho  |  omega | Accept | CRI".dimmed());
+    println!("{}", "-----+--------+--------+--------+--------+-----".dimmed());
     for result in &results {
-        let accept = if result.accepted { "✓" } else { " " };
-        let cri = if result.cri_triggered { "!" } else { " " };
-        println!(
-            " {:3} │ {:.4} │ {:.4} │ {:.4} │   {}    │  {}",
+        let accept = if result.accepted { "Y".green() } else { " ".normal() };
+        let cri = if result.cri_triggered { "!".yellow() } else { " ".normal() };
+        println!(" {:3} | {:.4} | {:.4} | {:.4} |   {}    |  {}",
             result.step,
             result.performance.psi,
             result.performance.rho,
             result.performance.omega,
             accept,
-            cri
-        );
+            cri);
     }
 
     let final_perf = calibrator.current_performance();
     println!();
-    println!("Final: ψ={:.4} ρ={:.4} ω={:.4}",
+    println!("{}: psi={:.4} rho={:.4} omega={:.4}",
+        "Final".green().bold(),
         final_perf.psi, final_perf.rho, final_perf.omega);
 }
 
 // ============================================================================
-// HELPER FUNCTIONS
+// INFO COMMAND
 // ============================================================================
 
-fn parse_arg(args: &[String], flag: &str, default: usize) -> usize {
-    args.iter()
-        .position(|a| a == flag)
-        .and_then(|i| args.get(i + 1))
-        .and_then(|s| s.parse().ok())
-        .unwrap_or(default)
+fn print_info() {
+    println!("\n{}", "QOPS System Information".cyan().bold());
+    println!("{}\n", "=".repeat(70).dimmed());
+
+    println!("{}: {}", "Version".yellow(), env!("CARGO_PKG_VERSION"));
+    println!();
+
+    println!("{}", "MODULES:".yellow().bold());
+    println!("{}", "-".repeat(70).dimmed());
+    println!("  {} | Shared types, signatures, resonance framework", "Core      ".cyan());
+    println!("  {} | S7 topology operator mining (5040 permutation nodes)", "Genesis   ".cyan());
+    println!("  {} | Cube-13 quantum algorithms (VQE, QAOA, quantum walks)", "Quantum   ".cyan());
+    println!("  {} | Quantum circuit simulator (gates, registers, measurement)", "Circuits  ".cyan());
+    println!("  {} | Classical algorithms (Grover, Shor, QFT, QPE, VQE, QAOA)", "Algorithms".cyan());
+    println!("  {} | Benchmarking, experiments, analysis, visualization", "Research  ".cyan());
+    println!("  {} | Meta-algorithm for fixpoint-directed calibration", "Seraphic  ".cyan());
+    println!("  {} | Bridges between Genesis and Quantum pipelines", "Adapters  ".cyan());
+    println!();
+
+    println!("{}", "TOPOLOGY:".yellow().bold());
+    println!("{}", "-".repeat(70).dimmed());
+    println!("  Genesis Pipeline: S7 permutation group (7! = 5040 nodes)");
+    println!("  Quantum Pipeline: Metatron Cube-13 (1 center + 6 hexagon + 6 cube)");
+    println!();
+
+    println!("{}", "CAPABILITIES:".yellow().bold());
+    println!("{}", "-".repeat(70).dimmed());
+    let caps = vec![
+        "Universal quantum gate set (H, X, Y, Z, CNOT, Toffoli, etc.)",
+        "State vector simulation (up to ~20 qubits)",
+        "Grover's search algorithm",
+        "Shor's factorization algorithm",
+        "Quantum Fourier Transform (QFT)",
+        "Quantum Phase Estimation (QPE)",
+        "Variational Quantum Eigensolver (VQE)",
+        "QAOA for combinatorial optimization",
+        "Hamiltonian simulation (Trotter decomposition)",
+        "Noise models (depolarizing, amplitude damping)",
+        "Benchmarking and performance analysis",
+        "Experiment framework with reproducibility",
+    ];
+    for cap in caps {
+        println!("  {} {}", "OK".green(), cap);
+    }
+    println!();
+
+    println!("{}: MIT", "License".yellow());
+}
+
+// ============================================================================
+// MAIN
+// ============================================================================
+
+fn main() {
+    let cli = Cli::parse();
+
+    // Initialize tracing
+    if cli.verbose {
+        let subscriber = FmtSubscriber::builder()
+            .with_max_level(Level::DEBUG)
+            .with_target(true)
+            .finish();
+        tracing::subscriber::set_global_default(subscriber)
+            .expect("Failed to set tracing subscriber");
+        info!("Verbose mode enabled");
+    }
+
+    match cli.command {
+        Commands::Info => print_info(),
+        Commands::Genesis(args) => run_genesis(args),
+        Commands::Quantum(args) => run_quantum(args),
+        Commands::Circuit(args) => run_circuit(args),
+        Commands::Algorithm(args) => run_algorithm(args),
+        Commands::Research(args) => run_research(args),
+        Commands::Benchmark(args) => run_benchmark(args),
+        Commands::Calibrate(args) => run_calibrate(args),
+    }
 }

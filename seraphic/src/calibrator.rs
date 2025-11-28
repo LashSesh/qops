@@ -18,6 +18,12 @@ pub struct CalibratorConfig {
     pub por_threshold: f64,
     pub cri_stagnation_threshold: usize,
     pub enabled: bool,
+    /// Initial temperature for simulated annealing
+    pub initial_temperature: f64,
+    /// Cooling rate for temperature schedule
+    pub cooling_rate: f64,
+    /// Threshold for Mandorla zone membership
+    pub mandorla_threshold: f64,
 }
 
 impl Default for CalibratorConfig {
@@ -29,6 +35,9 @@ impl Default for CalibratorConfig {
             por_threshold: 0.7,
             cri_stagnation_threshold: 10,
             enabled: true,
+            initial_temperature: 1.0,
+            cooling_rate: 0.95,
+            mandorla_threshold: 0.85,
         }
     }
 }
