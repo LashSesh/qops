@@ -5,8 +5,10 @@ pub mod calibration;
 pub mod circuits;
 pub mod genesis;
 pub mod holistic;
+pub mod hypercube;
 pub mod quantum;
 pub mod research;
+pub mod slots;
 pub mod system;
 
 use serde::{Deserialize, Serialize};
@@ -213,4 +215,171 @@ pub struct SystemInfoDto {
     pub version: String,
     pub modules: Vec<String>,
     pub capabilities: Vec<String>,
+}
+
+// ============================================================================
+// Hypercube DTOs
+// ============================================================================
+
+/// 5D Coordinate DTO
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Coord5DDto {
+    pub psi: f64,
+    pub rho: f64,
+    pub omega: f64,
+    pub chi: f64,
+    pub eta: f64,
+}
+
+/// Hypercube vertex DTO
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct HypercubeVertexDto {
+    pub id: String,
+    pub coordinate: Coord5DDto,
+    pub resonance: f64,
+    pub depth: usize,
+}
+
+/// Hypercube statistics DTO
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct HypercubeStatsDto {
+    pub total_vertices: usize,
+    pub total_edges: usize,
+    pub max_depth_reached: usize,
+    pub best_resonance: f64,
+    pub avg_resonance: f64,
+}
+
+/// Compilation result DTO
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CompilationResultDto {
+    pub output: Coord5DDto,
+    pub resonance: f64,
+    pub iterations: usize,
+    pub threshold_met: bool,
+    pub artifact_count: usize,
+}
+
+/// HDAG node DTO
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct HDAGNodeDto {
+    pub id: String,
+    pub name: String,
+    pub node_type: String,
+    pub input: Option<Coord5DDto>,
+    pub output: Option<Coord5DDto>,
+}
+
+/// HDAG edge DTO
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct HDAGEdgeDto {
+    pub from: String,
+    pub to: String,
+    pub label: Option<String>,
+    pub edge_type: String,
+}
+
+/// HDAG info DTO
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct HDAGInfoDto {
+    pub name: String,
+    pub nodes: Vec<HDAGNodeDto>,
+    pub edges: Vec<HDAGEdgeDto>,
+    pub execution_order: Vec<String>,
+}
+
+/// HDAG execution result DTO
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct HDAGExecutionResultDto {
+    pub output: Coord5DDto,
+    pub resonance: f64,
+    pub nodes_executed: usize,
+    pub nodes_failed: usize,
+    pub total_time_ms: u64,
+    pub artifact_count: usize,
+}
+
+/// Hypercube session result DTO
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct HypercubeSessionResultDto {
+    pub session_id: String,
+    pub state: String,
+    pub best_coordinate: Coord5DDto,
+    pub best_resonance: f64,
+    pub compilation_result: Option<CompilationResultDto>,
+    pub total_time_ms: u64,
+    pub expansion_steps: usize,
+    pub total_vertices: usize,
+    pub artifact_count: usize,
+}
+
+// ============================================================================
+// Slots DTOs
+// ============================================================================
+
+/// Slot symbol DTO
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SlotSymbolDto {
+    pub name: String,
+    pub weight: f64,
+}
+
+/// Slot value DTO
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SlotValueDto {
+    pub symbol: SlotSymbolDto,
+    pub value: f64,
+    pub entropy: f64,
+}
+
+/// Mined sequence DTO
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MinedSequenceDto {
+    pub id: String,
+    pub symbols: Vec<String>,
+    pub values: Vec<f64>,
+    pub resonance: f64,
+    pub coord5d: [f64; 5],
+    pub depth: usize,
+}
+
+/// Slots mining result DTO
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SlotsMiningResultDto {
+    pub best_resonance: f64,
+    pub total_steps: usize,
+    pub steps_to_best: usize,
+    pub mining_time_ms: u64,
+    pub converged: bool,
+    pub top_sequences: Vec<MinedSequenceDto>,
+}
+
+/// Slots session result DTO
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SlotsSessionResultDto {
+    pub session_id: String,
+    pub spin_count: usize,
+    pub best_resonance: f64,
+    pub best_sequence: Option<MinedSequenceDto>,
+    pub mining_result: Option<SlotsMiningResultDto>,
+    pub total_time_ms: u64,
+}
+
+/// Slot artifact DTO (for hypercube integration)
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SlotArtifactDto {
+    pub id: String,
+    pub name: String,
+    pub coordinate: Coord5DDto,
+    pub resonance: f64,
+    pub source_node: Option<String>,
+}
+
+/// Slots configuration DTO
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SlotsConfigDto {
+    pub entropy_distribution: String,
+    pub mining_strategy: String,
+    pub mining_depth: usize,
+    pub target_resonance: f64,
 }

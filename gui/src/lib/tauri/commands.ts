@@ -444,3 +444,304 @@ export async function runAutoTune(
 export async function getSystemInfo(): Promise<SystemInfoDto> {
   return invoke('get_system_info');
 }
+
+// ============================================================================
+// Hypercube Types
+// ============================================================================
+
+export interface Coord5DDto {
+  psi: number;
+  rho: number;
+  omega: number;
+  chi: number;
+  eta: number;
+}
+
+export interface HypercubeVertexDto {
+  id: string;
+  coordinate: Coord5DDto;
+  resonance: number;
+  depth: number;
+}
+
+export interface HypercubeStatsDto {
+  total_vertices: number;
+  total_edges: number;
+  max_depth_reached: number;
+  best_resonance: number;
+  avg_resonance: number;
+}
+
+export interface CompilationResultDto {
+  output: Coord5DDto;
+  resonance: number;
+  iterations: number;
+  threshold_met: boolean;
+  artifact_count: number;
+}
+
+export interface HDAGNodeDto {
+  id: string;
+  name: string;
+  node_type: string;
+  input: Coord5DDto | null;
+  output: Coord5DDto | null;
+}
+
+export interface HDAGEdgeDto {
+  from: string;
+  to: string;
+  label: string | null;
+  edge_type: string;
+}
+
+export interface HDAGInfoDto {
+  name: string;
+  nodes: HDAGNodeDto[];
+  edges: HDAGEdgeDto[];
+  execution_order: string[];
+}
+
+export interface HDAGExecutionResultDto {
+  output: Coord5DDto;
+  resonance: number;
+  nodes_executed: number;
+  nodes_failed: number;
+  total_time_ms: number;
+  artifact_count: number;
+}
+
+export interface HypercubeSessionResultDto {
+  session_id: string;
+  state: string;
+  best_coordinate: Coord5DDto;
+  best_resonance: number;
+  compilation_result: CompilationResultDto | null;
+  total_time_ms: number;
+  expansion_steps: number;
+  total_vertices: number;
+  artifact_count: number;
+}
+
+export interface HypercubePresetDto {
+  name: string;
+  description: string;
+  max_depth: number;
+  expansion_rule: string;
+}
+
+// ============================================================================
+// Slots Types
+// ============================================================================
+
+export interface MinedSequenceDto {
+  id: string;
+  symbols: string[];
+  values: number[];
+  resonance: number;
+  coord5d: [number, number, number, number, number];
+  depth: number;
+}
+
+export interface SlotsMiningResultDto {
+  best_resonance: number;
+  total_steps: number;
+  steps_to_best: number;
+  mining_time_ms: number;
+  converged: boolean;
+  top_sequences: MinedSequenceDto[];
+}
+
+export interface SlotsSessionResultDto {
+  session_id: string;
+  spin_count: number;
+  best_resonance: number;
+  best_sequence: MinedSequenceDto | null;
+  mining_result: SlotsMiningResultDto | null;
+  total_time_ms: number;
+}
+
+export interface SlotArtifactDto {
+  id: string;
+  name: string;
+  coordinate: Coord5DDto;
+  resonance: number;
+  source_node: string | null;
+}
+
+export interface SlotsConfigDto {
+  entropy_distribution: string;
+  mining_strategy: string;
+  mining_depth: number;
+  target_resonance: number;
+}
+
+export interface MiningStrategyDto {
+  name: string;
+  description: string;
+}
+
+export interface EntropyDistributionDto {
+  name: string;
+  description: string;
+}
+
+// ============================================================================
+// Hypercube Commands
+// ============================================================================
+
+export async function compileHypercube(
+  seedPsi: number,
+  seedRho: number,
+  seedOmega: number,
+  seedChi: number,
+  seedEta: number,
+  iterations: number,
+  useTriton: boolean
+): Promise<CompilationResultDto> {
+  return invoke('compile_hypercube', {
+    seedPsi,
+    seedRho,
+    seedOmega,
+    seedChi,
+    seedEta,
+    iterations,
+    useTriton,
+  });
+}
+
+export async function expandCubeStep(
+  currentVertices: number,
+  expansionRule: string,
+  iterations: number
+): Promise<HypercubeStatsDto> {
+  return invoke('expand_cube_step', { currentVertices, expansionRule, iterations });
+}
+
+export async function getHypercubeInfo(): Promise<Record<string, unknown>> {
+  return invoke('get_hypercube_info');
+}
+
+export async function hdagExecute(
+  pipelineType: string,
+  seedPsi: number,
+  seedRho: number,
+  seedOmega: number,
+  seedChi: number,
+  seedEta: number
+): Promise<HDAGExecutionResultDto> {
+  return invoke('hdag_execute', {
+    pipelineType,
+    seedPsi,
+    seedRho,
+    seedOmega,
+    seedChi,
+    seedEta,
+  });
+}
+
+export async function getHdagInfo(pipelineType: string): Promise<HDAGInfoDto> {
+  return invoke('get_hdag_info', { pipelineType });
+}
+
+export async function runHypercubeSession(
+  preset: string,
+  seedPsi?: number,
+  seedRho?: number,
+  seedOmega?: number,
+  seedChi?: number,
+  seedEta?: number
+): Promise<HypercubeSessionResultDto> {
+  return invoke('run_hypercube_session', {
+    preset,
+    seedPsi,
+    seedRho,
+    seedOmega,
+    seedChi,
+    seedEta,
+  });
+}
+
+export async function getHypercubePresets(): Promise<HypercubePresetDto[]> {
+  return invoke('get_hypercube_presets');
+}
+
+// ============================================================================
+// Slots Commands
+// ============================================================================
+
+export async function runSlotsEngine(
+  steps: number,
+  entropyDistribution: string,
+  miningStrategy: string,
+  targetResonance: number
+): Promise<SlotsSessionResultDto> {
+  return invoke('run_slots_engine', {
+    steps,
+    entropyDistribution,
+    miningStrategy,
+    targetResonance,
+  });
+}
+
+export async function slotsMineSequence(
+  depth: number,
+  strategy: string,
+  targetResonance: number,
+  beamWidth?: number
+): Promise<SlotsMiningResultDto> {
+  return invoke('slots_mine_sequence', {
+    depth,
+    strategy,
+    targetResonance,
+    beamWidth,
+  });
+}
+
+export async function getSlotsInfo(): Promise<Record<string, unknown>> {
+  return invoke('get_slots_info');
+}
+
+export async function getMiningStrategies(): Promise<MiningStrategyDto[]> {
+  return invoke('get_mining_strategies');
+}
+
+export async function getEntropyDistributions(): Promise<EntropyDistributionDto[]> {
+  return invoke('get_entropy_distributions');
+}
+
+export async function slotsGenerateArtifacts(
+  coordPsi: number,
+  coordRho: number,
+  coordOmega: number,
+  coordChi: number,
+  coordEta: number
+): Promise<SlotArtifactDto[]> {
+  return invoke('slots_generate_artifacts', {
+    coordPsi,
+    coordRho,
+    coordOmega,
+    coordChi,
+    coordEta,
+  });
+}
+
+export async function runHypercubeSlotsMode(
+  coordPsi?: number,
+  coordRho?: number,
+  coordOmega?: number,
+  coordChi?: number,
+  coordEta?: number
+): Promise<SlotArtifactDto[]> {
+  return invoke('run_hypercube_slots_mode', {
+    coordPsi,
+    coordRho,
+    coordOmega,
+    coordChi,
+    coordEta,
+  });
+}
+
+export async function getSlotsConfigOptions(): Promise<SlotsConfigDto> {
+  return invoke('get_slots_config_options');
+}

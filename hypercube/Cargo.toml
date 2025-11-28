@@ -1,0 +1,24 @@
+[package]
+name = "qops-hypercube"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Hypercube-HDAG 5D Framework - Self-compiling cubes with hierarchical execution"
+
+[dependencies]
+qops-core = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+nalgebra = { workspace = true }
+num-complex = { workspace = true }
+rand = { workspace = true }
+rand_distr = { workspace = true }
+petgraph = { workspace = true }
+uuid = { workspace = true }
+chrono = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+approx = { workspace = true }

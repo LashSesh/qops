@@ -71,6 +71,12 @@ enum Commands {
 
     /// Seraphic calibration shell for configuration evolution
     Calibrate(CalibrateArgs),
+
+    /// Hypercube-HDAG 5D Framework commands
+    Hypercube(HypercubeArgs),
+
+    /// Quantum Slots Engine commands
+    Slots(SlotsArgs),
 }
 
 // ============================================================================
@@ -1605,6 +1611,388 @@ fn run_calibrate(args: CalibrateArgs) {
 }
 
 // ============================================================================
+// HYPERCUBE COMMAND
+// ============================================================================
+
+#[derive(Args)]
+struct HypercubeArgs {
+    #[command(subcommand)]
+    mode: HypercubeMode,
+}
+
+#[derive(Subcommand)]
+enum HypercubeMode {
+    /// Compile a hypercube from seed
+    Compile {
+        /// Seed file (JSON)
+        #[arg(long)]
+        seed: Option<String>,
+        /// Number of expansion iterations
+        #[arg(short, long, default_value_t = 10)]
+        iterations: usize,
+        /// Use TRITON mode
+        #[arg(long)]
+        triton: bool,
+    },
+    /// Expand hypercube step by step
+    Expand {
+        /// Number of iterations
+        #[arg(short, long, default_value_t = 5)]
+        iterations: usize,
+        /// Expansion rule
+        #[arg(long, default_value = "triton")]
+        rule: String,
+    },
+    /// Execute HDAG pipeline
+    #[command(name = "exec-hdag")]
+    ExecHdag {
+        /// HDAG file (optional)
+        #[arg(long)]
+        graph: Option<String>,
+        /// Use parallel branches
+        #[arg(long)]
+        parallel: bool,
+    },
+    /// Show hypercube info
+    Info,
+}
+
+fn run_hypercube(args: HypercubeArgs) {
+    use qops_hypercube::{
+        Hypercube, HypercubeConfig, CubeExpansionRule,
+        HypercubeCompiler, CompilationConfig,
+        HDAG, HDAGExecutor,
+        HypercubeSession, SessionConfig,
+        HypercubeTritonMode, TritonExpansionConfig,
+        Coord5D,
+    };
+
+    match args.mode {
+        HypercubeMode::Compile { seed, iterations, triton } => {
+            println!("\n{}", "Hypercube Compilation".blue().bold());
+            println!("{}\n", "=".repeat(50).dimmed());
+
+            let seed_coord = if let Some(path) = seed {
+                println!("{}: {}", "Loading seed from".yellow(), path);
+                // For now, use default
+                Coord5D::center()
+            } else {
+                Coord5D::center()
+            };
+
+            println!("{}", "Configuration:".yellow());
+            println!("  Seed: {}", seed_coord);
+            println!("  Iterations: {}", iterations);
+            println!("  TRITON mode: {}", if triton { "Enabled".green() } else { "Disabled".dimmed() });
+            println!();
+
+            let config = HypercubeConfig {
+                max_depth: iterations,
+                expansion_rule: if triton { CubeExpansionRule::Triton } else { CubeExpansionRule::ResonanceGuided },
+                ..Default::default()
+            };
+
+            let mut cube = Hypercube::new("cli_cube", config);
+
+            let pb = create_stage_spinner("Expanding hypercube...");
+            for _ in 0..iterations {
+                let _ = cube.expand_step();
+            }
+            pb.finish_and_clear();
+
+            println!("{}", "Compiling...".cyan());
+            let compile_config = CompilationConfig::default();
+            let mut compiler = HypercubeCompiler::new(compile_config);
+            let result = compiler.compile(&mut cube).unwrap();
+
+            println!("\n{}", "Results:".green().bold());
+            println!("{}", "-".repeat(50).dimmed());
+            println!("  Output resonance: {:.4}", result.resonance);
+            println!("  Iterations: {}", result.iterations);
+            println!("  Threshold met: {}", if result.threshold_met { "Yes".green() } else { "No".yellow() });
+            println!("  Artifacts: {}", result.artifacts.len());
+            println!();
+            println!("  Output coordinate: {}", result.output);
+        }
+
+        HypercubeMode::Expand { iterations, rule } => {
+            println!("\n{}", "Hypercube Expansion".blue().bold());
+            println!("{}\n", "=".repeat(50).dimmed());
+
+            let expansion_rule = match rule.as_str() {
+                "lattice" => CubeExpansionRule::Lattice,
+                "resonance" => CubeExpansionRule::ResonanceGuided,
+                "triton" => CubeExpansionRule::Triton,
+                "operator" => CubeExpansionRule::OperatorDriven,
+                "random" => CubeExpansionRule::Random,
+                "hybrid" => CubeExpansionRule::HybridTriton,
+                _ => CubeExpansionRule::Triton,
+            };
+
+            println!("{}", "Configuration:".yellow());
+            println!("  Iterations: {}", iterations);
+            println!("  Rule: {:?}", expansion_rule);
+            println!();
+
+            let config = HypercubeConfig {
+                max_depth: iterations,
+                expansion_rule,
+                ..Default::default()
+            };
+
+            let mut cube = Hypercube::new("expansion_cube", config);
+
+            for i in 0..iterations {
+                let pb = create_stage_spinner(&format!("Expanding step {}...", i + 1));
+                let new_count = cube.expand_step().unwrap_or(0);
+                pb.finish_and_clear();
+                println!("  Step {}: +{} vertices (total: {})", i + 1, new_count, cube.vertices.len());
+            }
+
+            println!("\n{}", "Final Statistics:".green().bold());
+            println!("  Total vertices: {}", cube.stats.total_vertices);
+            println!("  Total edges: {}", cube.stats.total_edges);
+            println!("  Best resonance: {:.4}", cube.best_resonance);
+            println!("  Max depth: {}", cube.stats.max_depth_reached);
+        }
+
+        HypercubeMode::ExecHdag { graph, parallel } => {
+            println!("\n{}", "HDAG Execution".blue().bold());
+            println!("{}\n", "=".repeat(50).dimmed());
+
+            let seed = Coord5D::center();
+
+            let hdag = if parallel {
+                println!("{}: Parallel branches", "Mode".yellow());
+                HDAG::parallel_branches(seed)
+            } else {
+                println!("{}: Standard pipeline", "Mode".yellow());
+                HDAG::standard_pipeline(seed)
+            };
+
+            println!("  Nodes: {}", hdag.node_count());
+            println!("  Edges: {}", hdag.edge_count());
+            println!();
+
+            let pb = create_stage_spinner("Executing HDAG...");
+            let mut executor = HDAGExecutor::new(hdag);
+            let result = executor.execute().unwrap();
+            pb.finish_and_clear();
+
+            println!("{}", "Execution Results:".green().bold());
+            println!("{}", "-".repeat(50).dimmed());
+            println!("  Output: {}", result.output);
+            println!("  Resonance: {:.4}", result.resonance);
+            println!("  Nodes executed: {}", result.nodes_executed);
+            println!("  Nodes failed: {}", result.nodes_failed);
+            println!("  Time: {} ms", result.total_time_ms);
+            println!("  Artifacts: {}", result.artifact_count);
+        }
+
+        HypercubeMode::Info => {
+            println!("\n{}", "Hypercube-HDAG 5D Framework".blue().bold());
+            println!("{}\n", "=".repeat(60).dimmed());
+
+            println!("{}", "COMPONENTS:".yellow());
+            println!("  {} | 5D self-compiling cube structure", "Hypercube ".cyan());
+            println!("  {} | Hierarchical Directed Acyclic Graph", "HDAG      ".cyan());
+            println!("  {} | DK, SW, PI, WT + Compilation (Xi)", "Operators ".cyan());
+            println!("  {} | (psi, rho, omega, chi, eta) system", "Coord5D   ".cyan());
+            println!();
+
+            println!("{}", "5D OPERATORS:".yellow());
+            println!("  {} | Double Kick - perturbation dynamics", "DK".green());
+            println!("  {} | Swap Wave - dimensional exchange", "SW".green());
+            println!("  {} | Phase Integration - phase alignment", "PI".green());
+            println!("  {} | Weight Transform - weighted mapping", "WT".green());
+            println!("  {} | Compilation operator (Xi)", "Xi".green().bold());
+            println!();
+
+            println!("{}", "EXPANSION RULES:".yellow());
+            println!("  lattice    | All neighbors expansion");
+            println!("  resonance  | High resonance neighbors first");
+            println!("  triton     | TRITON spiral search");
+            println!("  operator   | Operator-driven exploration");
+            println!("  hybrid     | TRITON + Resonance combined");
+        }
+    }
+}
+
+// ============================================================================
+// SLOTS COMMAND
+// ============================================================================
+
+#[derive(Args)]
+struct SlotsArgs {
+    #[command(subcommand)]
+    mode: SlotsMode,
+}
+
+#[derive(Subcommand)]
+enum SlotsMode {
+    /// Run the slots engine
+    Run {
+        /// Number of steps
+        #[arg(long, default_value_t = 50)]
+        steps: usize,
+        /// Entropy mode
+        #[arg(long, default_value = "stochastic")]
+        entropy: String,
+    },
+    /// Mine operator sequences
+    #[command(name = "sequence-mine")]
+    SequenceMine {
+        /// Mining depth
+        #[arg(long, default_value_t = 8)]
+        depth: usize,
+        /// Mining strategy
+        #[arg(long, default_value = "beam")]
+        strategy: String,
+    },
+    /// Show slots info
+    Info,
+}
+
+fn run_slots(args: SlotsArgs) {
+    use qops_slots::{
+        SlotsSession, SlotsSessionConfig,
+        SequenceMiner, MinerConfig, MiningStrategy,
+        EntropyConfig, EntropyDistribution,
+        SlotTopology, TopologyType,
+    };
+
+    match args.mode {
+        SlotsMode::Run { steps, entropy } => {
+            println!("\n{}", "Quantum Slots Engine".magenta().bold());
+            println!("{}\n", "=".repeat(50).dimmed());
+
+            let entropy_config = match entropy.as_str() {
+                "uniform" => EntropyConfig::default(),
+                "stochastic" => EntropyConfig::stochastic(),
+                "resonance" => EntropyConfig::resonance_optimized(),
+                _ => EntropyConfig::default(),
+            };
+
+            println!("{}", "Configuration:".yellow());
+            println!("  Steps: {}", steps);
+            println!("  Entropy: {:?}", entropy_config.distribution);
+            println!();
+
+            let config = SlotsSessionConfig {
+                entropy_config,
+                spins_before_mine: steps.min(20),
+                miner_config: MinerConfig {
+                    depth: steps,
+                    ..Default::default()
+                },
+                ..Default::default()
+            };
+
+            let mut session = SlotsSession::new(config);
+
+            let pb = create_stage_spinner("Running slots engine...");
+            let result = session.run().unwrap();
+            pb.finish_and_clear();
+
+            println!("{}", "Results:".green().bold());
+            println!("{}", "-".repeat(50).dimmed());
+            println!("  Spins performed: {}", result.spin_count);
+            println!("  Best resonance: {:.4}", result.best_resonance);
+            println!("  Session time: {} ms", result.total_time_ms);
+
+            if let Some(seq) = &result.best_sequence {
+                println!("\n{}", "Best Sequence:".cyan());
+                let symbols: String = seq.symbols.iter().map(|s| format!("{} ", s)).collect();
+                println!("  Symbols: {}", symbols);
+                println!("  Resonance: {:.4}", seq.resonance);
+                println!("  5D Coord: ({:.2}, {:.2}, {:.2}, {:.2}, {:.2})",
+                    seq.coord5d[0], seq.coord5d[1], seq.coord5d[2], seq.coord5d[3], seq.coord5d[4]);
+            }
+
+            if let Some(mining) = &result.mining_result {
+                println!("\n{}", "Mining Stats:".yellow());
+                println!("  Total steps: {}", mining.total_steps);
+                println!("  Top sequences: {}", mining.top_sequences.len());
+                println!("  Converged: {}", if mining.converged { "Yes".green() } else { "No".yellow() });
+            }
+        }
+
+        SlotsMode::SequenceMine { depth, strategy } => {
+            println!("\n{}", "Sequence Mining".magenta().bold());
+            println!("{}\n", "=".repeat(50).dimmed());
+
+            let mining_strategy = match strategy.as_str() {
+                "greedy" => MiningStrategy::Greedy,
+                "stochastic" => MiningStrategy::Stochastic,
+                "beam" => MiningStrategy::BeamSearch,
+                "evolutionary" => MiningStrategy::Evolutionary,
+                "triton" => MiningStrategy::Triton,
+                _ => MiningStrategy::BeamSearch,
+            };
+
+            println!("{}", "Configuration:".yellow());
+            println!("  Depth: {}", depth);
+            println!("  Strategy: {:?}", mining_strategy);
+            println!();
+
+            let config = MinerConfig {
+                depth,
+                strategy: mining_strategy,
+                target_resonance: 0.8,
+                ..Default::default()
+            };
+
+            let mut miner = SequenceMiner::new(config);
+
+            let pb = create_stage_spinner("Mining sequences...");
+            let result = miner.mine().unwrap();
+            pb.finish_and_clear();
+
+            println!("{}", "Mining Results:".green().bold());
+            println!("{}", "-".repeat(50).dimmed());
+            println!("  Best resonance: {:.4}", result.best_resonance);
+            println!("  Total steps: {}", result.total_steps);
+            println!("  Steps to best: {}", result.steps_to_best);
+            println!("  Mining time: {} ms", result.mining_time_ms);
+            println!("  Converged: {}", if result.converged { "Yes".green() } else { "No".yellow() });
+
+            println!("\n{}", "Top Sequences:".cyan());
+            for (i, seq) in result.top_sequences.iter().take(5).enumerate() {
+                let symbols: String = seq.symbols.iter().take(5).map(|s| format!("{}", s)).collect();
+                println!("  {}. {} (R={:.4})", i + 1, symbols, seq.resonance);
+            }
+        }
+
+        SlotsMode::Info => {
+            println!("\n{}", "Quantum Slots Engine (QSlots)".magenta().bold());
+            println!("{}\n", "=".repeat(60).dimmed());
+
+            println!("{}", "COMPONENTS:".yellow());
+            println!("  {} | Configurable slot with spin and value", "Slot      ".cyan());
+            println!("  {} | Multi-dimensional slot grid", "Lattice   ".cyan());
+            println!("  {} | Random value generation system", "Entropy   ".cyan());
+            println!("  {} | Sequence optimization engine", "Miner     ".cyan());
+            println!();
+
+            println!("{}", "SYMBOLS:".yellow());
+            println!("  {} | Quality (weight: 0.4)", "psi".green());
+            println!("  {} | Stability (weight: 0.3)", "rho".green());
+            println!("  {} | Efficiency (weight: 0.3)", "omega".green());
+            println!("  {} | Topological (weight: 0.05)", "chi".green());
+            println!("  {} | Fluctuation (weight: -0.05)", "eta".green());
+            println!();
+
+            println!("{}", "MINING STRATEGIES:".yellow());
+            println!("  greedy      | Always take best outcome");
+            println!("  stochastic  | Simulated annealing");
+            println!("  beam        | Beam search (multiple candidates)");
+            println!("  evolutionary| Genetic algorithm");
+            println!("  triton      | TRITON spiral search");
+        }
+    }
+}
+
+// ============================================================================
 // INFO COMMAND
 // ============================================================================
 
@@ -1625,6 +2013,8 @@ fn print_info() {
     println!("  {} | Benchmarking, experiments, analysis, visualization", "Research  ".cyan());
     println!("  {} | Meta-algorithm for fixpoint-directed calibration", "Seraphic  ".cyan());
     println!("  {} | Bridges between Genesis and Quantum pipelines", "Adapters  ".cyan());
+    println!("  {} | Hypercube-HDAG 5D Framework with self-compiling cubes", "Hypercube ".cyan());
+    println!("  {} | Quantum Slots Engine with entropy mapping & mining", "Slots     ".cyan());
     println!();
 
     println!("{}", "TOPOLOGY:".yellow().bold());
@@ -1684,5 +2074,7 @@ fn main() {
         Commands::Research(args) => run_research(args),
         Commands::Benchmark(args) => run_benchmark(args),
         Commands::Calibrate(args) => run_calibrate(args),
+        Commands::Hypercube(args) => run_hypercube(args),
+        Commands::Slots(args) => run_slots(args),
     }
 }
