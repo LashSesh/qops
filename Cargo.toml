@@ -43,7 +43,7 @@ chrono = { version = "0.4", features = ["serde"] }
 
 # Error handling
 anyhow = "1.0"
-thiserror = "1.0"
+thiserror = "2.0"
 
 # Graph structures
 petgraph = { version = "0.6", features = ["serde-1"] }
@@ -51,10 +51,18 @@ petgraph = { version = "0.6", features = ["serde-1"] }
 # Parallel computing
 rayon = "1.10"
 
-# Logging
+# Logging & Tracing
 log = "0.4"
 tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+
+# CLI
+clap = { version = "4.4", features = ["derive", "env", "unicode", "wrap_help"] }
+colored = "2.1"
+indicatif = "0.17"
+
+# Async Runtime
+tokio = { version = "1.35", features = ["rt-multi-thread", "macros", "sync"] }
 
 # Testing
 approx = "0.5"

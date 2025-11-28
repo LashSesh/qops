@@ -4,17 +4,48 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-1.70+-orange.svg)](https://www.rust-lang.org)
+[![Tauri](https://img.shields.io/badge/tauri-2.0-blue.svg)](https://tauri.app)
 
 ## Overview
 
 QOPS (Quantum Operator Processing System) is a Rust-based quantum computing research framework that combines:
 
+- **Desktop GUI Application**: Modern Tauri-based interface with Svelte frontend
 - **Quantum Circuit Simulator**: Universal gate set, state vector simulation
 - **Classical Quantum Algorithms**: Grover, Shor, QFT, QPE, VQE, QAOA
 - **Research Tools**: Benchmarking, experiments, analysis, visualization
 - **Genesis Pipeline**: S7 topology operator mining (5040 nodes)
 - **Quantum Pipeline**: Cube-13 topology algorithms (13 nodes)
 - **Seraphic Calibration**: Meta-algorithm for configuration optimization
+
+## Desktop Application
+
+QOPS includes a full-featured desktop GUI built with Tauri 2.0 and SvelteKit:
+
+```
++-------------------------------------------------------------------+
+|  QOPS - Quantum Operator Processing System         [_][O][X]       |
++-------------------------------------------------------------------+
+| Dashboard | Circuits | Algorithms | Topology | Resonance | Settings|
++-------------------------------------------------------------------+
+|                                                                     |
+|  Welcome to QOPS                                                   |
+|  ====================================================================|
+|                                                                     |
+|  [Run Grover]    [Run Shor]    [Build Circuit]    [Explore S7]     |
+|                                                                     |
++-------------------------------------------------------------------+
+```
+
+**Features:**
+- Visual Circuit Builder with drag-and-drop gates
+- Algorithm Runner with real-time visualization
+- S7 Topology Explorer (5040 nodes)
+- Cube-13 Quantum Walk visualization
+- Seraphic Calibration interface
+- Dark quantum-themed UI
+
+See [docs/GUI_README.md](docs/GUI_README.md) for GUI documentation.
 
 ## Architecture
 

@@ -1,0 +1,59 @@
+[package]
+name = "qops-gui"
+version = "0.1.0"
+description = "QOPS Desktop Application - Quantum Operator Processing System"
+authors = ["QOPS Team"]
+license = "MIT"
+repository = "https://github.com/LashSesh/qops"
+edition = "2021"
+
+[lib]
+name = "qops_gui_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+# Tauri
+tauri = { version = "2", features = ["macos-private-api"] }
+tauri-plugin-shell = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-fs = "2"
+
+# QOPS Crates
+qops-core = { path = "../../core" }
+qops-genesis = { path = "../../genesis" }
+qops-quantum = { path = "../../quantum" }
+qops-circuits = { path = "../../circuits" }
+qops-algorithms = { path = "../../algorithms" }
+qops-research = { path = "../../research" }
+qops-seraphic = { path = "../../seraphic" }
+qops-adapters = { path = "../../adapters" }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Async
+tokio = { version = "1", features = ["rt-multi-thread", "sync", "macros"] }
+
+# Error handling
+thiserror = "2.0"
+anyhow = "1.0"
+
+# Utilities
+uuid = { version = "1.6", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+tracing = "0.1"
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true
