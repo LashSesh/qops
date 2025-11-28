@@ -40,6 +40,14 @@ pub fn run() {
             commands::genesis::get_genesis_families,
             commands::genesis::get_s7_topology_info,
             commands::genesis::get_node_details,
+            // Holistic Resonance Architecture commands
+            commands::holistic::run_holistic_mining,
+            commands::holistic::run_kosmokrator_stage,
+            commands::holistic::run_chronokrator_stage,
+            commands::holistic::run_pfauenthron_stage,
+            commands::holistic::run_adaptive_triton,
+            commands::holistic::get_holistic_presets,
+            commands::holistic::export_holistic_results,
             // Quantum commands (Cube-13 topology)
             commands::quantum::run_quantum_walk,
             commands::quantum::get_cube13_info,

@@ -4,6 +4,7 @@ pub mod algorithms;
 pub mod calibration;
 pub mod circuits;
 pub mod genesis;
+pub mod holistic;
 pub mod quantum;
 pub mod research;
 pub mod system;

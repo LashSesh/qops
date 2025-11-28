@@ -39,6 +39,8 @@ pub mod traversal;
 pub mod evolution;
 pub mod mining;
 pub mod family;
+pub mod holistic_mining;
+pub mod reporting;
 
 pub use metatron_cube::MetatronCube;
 pub use agent::{Agent, AgentConfig, TraversalStrategy};
@@ -49,6 +51,15 @@ pub use traversal::TraversalEngine;
 pub use evolution::{EvolutionEngine, EvolutionConfig, GenerationStats};
 pub use mining::{MiningSession, MiningConfig, MiningStrategy, MiningResult, MiningStats};
 pub use family::{OperatorFamily, FamilyClusterer, FamilyMetrics, FamilyCharacteristics};
+pub use holistic_mining::{
+    HolisticMiningConfig, HolisticMiningSession, HolisticMiningResult,
+    StageLogEntry, StageMetrics, GenesisStage,
+};
+pub use reporting::{
+    GenesisReporter, ReportFormat, ReportConfig, GenesisReport,
+    FamilyReportEntry, PipelineStageSummary, MonolithSummary, ReportStatistics,
+    export_to_file,
+};
 
 /// Number of nodes in S7 (7! permutations)
 pub const S7_NODE_COUNT: usize = 5040;
