@@ -1,159 +1,317 @@
-# QOPS - Unified Quantum Operator Processing System
+# QOPS - Quantum Research Framework
 
-**A fusion of Genesis-Engine (MOGE) and MetatronQSO (Q⊗DASH) into a unified, modular architecture.**
+**A comprehensive framework for quantum algorithm research, experimentation, and education.**
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Rust](https://img.shields.io/badge/rust-1.70+-orange.svg)](https://www.rust-lang.org)
 
 ## Overview
 
-QOPS combines two powerful systems:
+QOPS (Quantum Operator Processing System) is a Rust-based quantum computing research framework that combines:
 
-- **Genesis Pipeline (MOGE)**: S7 topology operator mining (5040 nodes)
-- **Quantum Pipeline (QSO)**: Cube-13 topology quantum algorithms (13 nodes)
-- **Seraphic Calibration Shell**: Meta-algorithm for fixpoint-directed evolution
+- **Quantum Circuit Simulator**: Universal gate set, state vector simulation
+- **Classical Quantum Algorithms**: Grover, Shor, QFT, QPE, VQE, QAOA
+- **Research Tools**: Benchmarking, experiments, analysis, visualization
+- **Genesis Pipeline**: S7 topology operator mining (5040 nodes)
+- **Quantum Pipeline**: Cube-13 topology algorithms (13 nodes)
+- **Seraphic Calibration**: Meta-algorithm for configuration optimization
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                         QOPS                                 │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐   │
-│  │   Genesis    │    │   Quantum    │    │   Seraphic   │   │
-│  │  (S7 5040)   │    │  (Cube 13)   │    │    (SCS)     │   │
-│  └──────┬───────┘    └──────┬───────┘    └──────┬───────┘   │
-│         │                   │                   │           │
-│         └─────────┬─────────┴─────────┬─────────┘           │
-│                   │                   │                      │
-│            ┌──────┴───────┐    ┌──────┴───────┐              │
-│            │   Adapters   │    │     Core     │              │
-│            └──────────────┘    └──────────────┘              │
-│                                                              │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              QOPS Framework                                  │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐        │
+│  │  Circuits   │  │ Algorithms  │  │  Research   │  │    CLI      │        │
+│  │   (sim)     │  │  (quantum)  │  │   (tools)   │  │ (interface) │        │
+│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘        │
+│         │                │                │                │               │
+│  ┌──────┴────────────────┴────────────────┴────────────────┴──────┐        │
+│  │                            Core                                  │        │
+│  └──────┬────────────────┬────────────────┬────────────────┬──────┘        │
+│         │                │                │                │               │
+│  ┌──────┴──────┐  ┌──────┴──────┐  ┌──────┴──────┐  ┌──────┴──────┐        │
+│  │   Genesis   │  │   Quantum   │  │  Seraphic   │  │  Adapters   │        │
+│  │  (S7 5040)  │  │  (Cube 13)  │  │    (SCS)    │  │  (bridges)  │        │
+│  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────┘        │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-## Core Concepts
+## Features
 
-### Unified Signature System (ψ, ρ, ω)
+### Quantum Circuit Simulator (`qops-circuits`)
 
-- **ψ (psi)**: Quality / Spectral coherence
-- **ρ (rho)**: Stability / Robustness
-- **ω (omega)**: Efficiency / Performance
+- **Qubits & States**: Single/multi-qubit states, Bloch sphere representation
+- **Universal Gate Set**: H, X, Y, Z, S, T, Rx, Ry, Rz, CNOT, CZ, Toffoli, etc.
+- **Circuit Building**: Fluent API for circuit construction
+- **Measurement**: Projective measurement, Pauli expectations, tomography
+- **Noise Models**: Depolarizing, amplitude damping, thermal relaxation
 
-Extended to 5D with χ (chi) and η (eta) for topological coherence and fluctuation.
+### Quantum Algorithms (`qops-algorithms`)
 
-### Resonance Formula
+| Algorithm | Description | Speedup |
+|-----------|-------------|---------|
+| **Grover's Search** | Unstructured database search | O(√N) |
+| **Shor's Factorization** | Integer factorization | Exponential |
+| **QFT** | Quantum Fourier Transform | O(n²) vs O(n·2ⁿ) |
+| **QPE** | Quantum Phase Estimation | Eigenvalue finding |
+| **VQE** | Variational Quantum Eigensolver | Ground state energy |
+| **QAOA** | Quantum Approximate Optimization | Combinatorial opt. |
+| **Hamiltonian Simulation** | Time evolution | Trotter-Suzuki |
 
+### Research Tools (`qops-research`)
+
+- **Benchmarking**: Performance measurement, comparison tables
+- **Experiments**: Structured experiments with parameter sweeps
+- **Analysis**: Statistical summary, correlation, regression, t-tests
+- **Visualization**: Export to JSON, CSV, Matplotlib, Gnuplot, LaTeX
+- **Reports**: Generate Markdown/HTML/LaTeX reports
+
+## Quick Start
+
+### Installation
+
+```bash
+git clone https://github.com/LashSesh/qops.git
+cd qops
+cargo build --release
 ```
-R(v) = 0.4·ψ + 0.3·ρ + 0.3·ω + 0.05·χ - 0.05·η
+
+### Basic Usage
+
+```bash
+# Show all available commands
+cargo run --bin qops -- help
+
+# System information
+cargo run --bin qops -- info
+
+# Run Grover's algorithm
+cargo run --bin qops -- algorithm grover --qubits 4 --target 5
+
+# Factor a number with Shor's algorithm
+cargo run --bin qops -- algorithm shor --number 15
+
+# Create and simulate a Bell state
+cargo run --bin qops -- circuit bell
+
+# Run VQE for ground state energy
+cargo run --bin qops -- algorithm vqe --qubits 2
+
+# Benchmark quantum algorithms
+cargo run --bin qops -- benchmark qft --qubits 2,3,4,5
+
+# Run scaling experiment
+cargo run --bin qops -- research experiment
 ```
 
-### Double-Kick Operator (T = Φ_V ∘ Φ_U)
+### Programmatic Usage
 
-1. **Φ_U (Update Kick)**: Improves quality
-2. **Φ_V (Stabilization Kick)**: Improves stability and efficiency
+```rust
+use qops_circuits::{Circuit, QuantumRegister, Gate, Measurement};
+use qops_algorithms::{Grover, Oracle};
+
+// Create a Bell state
+let circuit = Circuit::new(2)
+    .h(0)
+    .cnot(0, 1);
+
+let mut reg = QuantumRegister::new(2);
+reg.apply_circuit(&circuit).unwrap();
+
+// Measure
+let stats = Measurement::measure_all(&reg, 1000);
+println!("Results: {:?}", stats.counts);
+
+// Run Grover's search
+let oracle = Oracle::marked_state(4, 5);
+let grover = Grover::new(4, oracle);
+let result = grover.run();
+println!("Found: {}", result.measured_state);
+```
 
 ## Workspace Structure
 
 ```
 qops/
-├── core/           # Shared types, traits, and utilities
-├── genesis/        # S7 topology operator mining (MOGE)
-├── quantum/        # Cube-13 quantum algorithms (QSO)
-├── seraphic/       # Calibration Shell meta-algorithm
-├── adapters/       # Bridge modules for integration
+├── core/           # Shared types, signatures, resonance framework
+├── genesis/        # S7 topology operator mining (5040 nodes)
+├── quantum/        # Cube-13 quantum algorithms (13 nodes)
+├── circuits/       # Quantum circuit simulator (NEW)
+├── algorithms/     # Classical quantum algorithms (NEW)
+├── research/       # Benchmarking & experiments (NEW)
+├── seraphic/       # Calibration meta-algorithm
+├── adapters/       # Bridge modules
 └── cli/            # Command-line interface
 ```
 
-## Quick Start
+## Module Details
 
-### Build
+### Core (`qops-core`)
 
-```bash
-cargo build --release
+Foundational types shared across all modules:
+
+- **Signature System**: 3D (ψ, ρ, ω) and 5D (ψ, ρ, ω, χ, η) metrics
+- **Resonance**: R(v) = 0.4·ψ + 0.3·ρ + 0.3·ω + 0.05·χ - 0.05·η
+- **Topology Trait**: `ResonanceTopology` for graph structures
+- **Pipeline**: Generative processing abstraction
+- **Ledger**: Hash-chained result storage
+
+### Circuits (`qops-circuits`)
+
+Full quantum circuit simulation:
+
+```rust
+// Build a QFT circuit
+let qft = Circuit::qft(4);
+
+// Apply to register
+let mut reg = QuantumRegister::new(4);
+reg.apply_circuit(&qft)?;
+
+// Get measurement statistics
+let counts = reg.get_counts(1000);
 ```
 
-### Run Tests
+### Algorithms (`qops-algorithms`)
+
+Ready-to-use quantum algorithms:
+
+```rust
+// Grover's search
+let grover = Grover::new(5, Oracle::marked_state(5, 17));
+let result = grover.run();
+
+// Shor's factorization
+let shor = Shor::new(21);
+let factors = shor.run();
+
+// VQE for Heisenberg model
+let hamiltonian = PauliSum::heisenberg(4, 1.0);
+let vqe = VQE::for_hamiltonian(hamiltonian);
+let ground_energy = vqe.run();
+
+// QAOA MaxCut
+let qaoa = QAOA::max_cut(edges, 3);
+let solution = qaoa.run();
+```
+
+### Research (`qops-research`)
+
+Tools for systematic research:
+
+```rust
+// Run scaling experiment
+let result = Experiment::new("grover_scaling")
+    .parameter(Parameter::new("qubits", vec![2, 3, 4, 5, 6]))
+    .repetitions(10)
+    .run(|params| { /* ... */ });
+
+// Benchmark comparison
+let suite = quantum_benchmarks::qft_scaling(&[2, 4, 6, 8]);
+println!("{}", suite.comparison_table());
+
+// Statistical analysis
+let mut analysis = Analysis::new();
+analysis.add_series("times", measurements);
+let fit = analysis.linear_regression("qubits", "times");
+```
+
+## CLI Commands
+
+| Command | Description |
+|---------|-------------|
+| `qops info` | Display system information |
+| `qops circuit <type>` | Simulate quantum circuits |
+| `qops algorithm <algo>` | Run quantum algorithms |
+| `qops benchmark <algo>` | Benchmark performance |
+| `qops research <mode>` | Research tools |
+| `qops genesis` | S7 operator mining |
+| `qops quantum` | Cube-13 algorithms |
+| `qops calibrate` | Seraphic calibration |
+
+## Performance
+
+State vector simulation scales exponentially with qubit count:
+
+| Qubits | States | Memory (approx) |
+|--------|--------|-----------------|
+| 10 | 1,024 | 16 KB |
+| 15 | 32,768 | 512 KB |
+| 20 | 1,048,576 | 16 MB |
+| 25 | 33,554,432 | 512 MB |
+| 30 | 1,073,741,824 | 16 GB |
+
+For larger systems, consider using noise models or approximate simulation.
+
+## Development
+
+### Running Tests
 
 ```bash
 cargo test --workspace
 ```
 
-### CLI Usage
+### Building Documentation
 
 ```bash
-# Show system info
-cargo run --bin qops -- info
-
-# Run Genesis operator mining
-cargo run --bin qops -- genesis --agents 5 --steps 50
-
-# Run quantum walk
-cargo run --bin qops -- quantum walk
-
-# Run VQE
-cargo run --bin qops -- quantum vqe
-
-# Run QAOA
-cargo run --bin qops -- quantum qaoa
-
-# Run Seraphic calibration
-cargo run --bin qops -- calibrate --steps 20
+cargo doc --workspace --open
 ```
 
-## Components
+### Release Build
 
-### Core (`qops-core`)
+```bash
+cargo build --release
+```
 
-- `Signature` - 3D/5D performance metrics
-- `ResonanceTopology` - Graph topology trait
-- `CalibrationOperator` - Configuration evolution
-- `GenerativePipeline` - Pipeline abstraction
-- `MandorlaField` - 16D resonance field
-- `ResonanceLedger` - Hash-chained storage
+## Mathematical Background
 
-### Genesis (`qops-genesis`)
+### Resonance Formula
 
-- `MetatronCube` - S7 permutation graph (5040 nodes)
-- `Agent` - Traversal agents with strategies
-- `Artefact` - Mining results with blueprints
-- `Cubechain` - Hypercube-DAG ledger
-- `MetaCognition` - Self-reflection layer
-- `KNO` - Double-kick operators
+The unified performance metric:
 
-### Quantum (`qops-quantum`)
+```
+R(v) = 0.4·ψ + 0.3·ρ + 0.3·ω + 0.05·χ - 0.05·η
+```
 
-- `MetatronGraph` - 13-node Metatron geometry
-- `QuantumState` - Complex amplitude vectors
-- `MetatronHamiltonian` - Graph Hamiltonians
-- `VQE/QAOA/VQC` - Variational algorithms
-- `ContinuousQuantumWalk` - Quantum walks
-- `DTL` - Dynamic Tripolar Logic (58.5% advantage)
+Where:
+- ψ (psi): Quality / Spectral coherence
+- ρ (rho): Stability / Robustness
+- ω (omega): Efficiency / Performance
+- χ (chi): Topological coherence (5D)
+- η (eta): Fluctuation measure (5D)
 
-### Seraphic (`qops-seraphic`)
+### Double-Kick Operator
 
-- `SeraphicCalibrator` - Main orchestrator
-- `ProofOfResonance` - Acceptance validation
-- `CRI` - Calibration Regime Initialization
+Configuration evolution: T = Φ_V ∘ Φ_U
+
+1. **Φ_U (Update Kick)**: Improves quality metric
+2. **Φ_V (Stabilization Kick)**: Improves stability and efficiency
 
 ## Origins
 
-This system fuses:
+QOPS fuses two systems:
 
-1. **genesis-engine (MOGE)**: Metatronic Operator Genesis Engine
-   - S7 permutation topology (5040 nodes)
-   - Operator mining with resonance feedback
-   - Meta-cognition and self-reflection
+1. **Genesis Engine (MOGE)**: Metatronic Operator Genesis Engine
+   - S7 permutation topology (7! = 5040 nodes)
+   - Agent-based operator mining with resonance feedback
 
-2. **qso (MetatronQSO)**: Quantum State Operator Framework
+2. **MetatronQSO**: Quantum State Operator Framework
    - 13-node Metatron Cube geometry
-   - VQE, QAOA, VQC algorithms
+   - Variational quantum algorithms (VQE, QAOA)
    - Seraphic Calibration Shell
-   - DioniceOS integration
 
 ## License
 
-MIT License
+MIT License - see [LICENSE](LICENSE) for details.
+
+## Contributing
+
+Contributions welcome! Please read our contributing guidelines and submit PRs.
 
 ## Authors
 
-QOPS Unified Team (fusion of MOGE and QSO development teams)
+QOPS Unified Team
