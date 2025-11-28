@@ -1,0 +1,21 @@
+[package]
+name = "qops-cli"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Command-line interface for QOPS"
+
+[[bin]]
+name = "qops"
+path = "src/main.rs"
+
+[dependencies]
+qops-core = { workspace = true }
+qops-genesis = { workspace = true }
+qops-quantum = { workspace = true }
+qops-seraphic = { workspace = true }
+qops-adapters = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }

@@ -1,0 +1,22 @@
+[package]
+name = "qops-genesis"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Genesis Pipeline - S7 Topology Operator Mining for QOPS"
+
+[dependencies]
+qops-core = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+nalgebra = { workspace = true }
+num-complex = { workspace = true }
+rand = { workspace = true }
+uuid = { workspace = true }
+chrono = { workspace = true }
+thiserror = { workspace = true }
+petgraph = { workspace = true }
+
+[dev-dependencies]
+approx = { workspace = true }

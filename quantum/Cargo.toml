@@ -1,0 +1,20 @@
+[package]
+name = "qops-quantum"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Quantum Pipeline - Cube-13 Topology for Quantum Algorithms in QOPS"
+
+[dependencies]
+qops-core = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+nalgebra = { workspace = true }
+num-complex = { workspace = true }
+rand = { workspace = true }
+uuid = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+approx = { workspace = true }
