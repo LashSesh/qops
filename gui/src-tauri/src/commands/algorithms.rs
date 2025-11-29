@@ -196,7 +196,7 @@ pub async fn run_vqe(qubits: usize, layers: usize, max_iterations: usize) -> Res
 pub async fn run_qaoa(
     edges: Vec<(usize, usize)>,
     layers: usize,
-    shots: usize,
+    _shots: usize,
 ) -> Result<QaoaResultDto> {
     if edges.is_empty() {
         return Err(AppError::InvalidParameter(
