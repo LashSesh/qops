@@ -3,14 +3,14 @@
 //! Commands for hypercube operations, HDAG execution, and 5D coordinate manipulation.
 
 use super::{
-    Coord5DDto, HypercubeStatsDto, HypercubeVertexDto, CompilationResultDto,
+    Coord5DDto, HypercubeStatsDto, CompilationResultDto,
     HDAGInfoDto, HDAGNodeDto, HDAGEdgeDto, HDAGExecutionResultDto,
     HypercubeSessionResultDto,
 };
 use qops_hypercube::{
     Hypercube, HypercubeConfig, CubeExpansionRule,
     HypercubeCompiler, CompilationConfig,
-    HDAG, HDAGExecutor, HDAGNode,
+    HDAG, HDAGExecutor,
     HypercubeSession, SessionConfig,
     Coord5D,
 };

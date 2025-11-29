@@ -11,8 +11,7 @@ use qops_slots::{
     SlotsSession, SlotsSessionConfig,
     SequenceMiner, MinerConfig, MiningStrategy,
     EntropyConfig, EntropyDistribution,
-    SlotSymbol,
-    hypercube_integration::{SlotsHypercubeAdapter, AdapterConfig, HypercubeSlotsMode},
+    hypercube_integration::{SlotsHypercubeAdapter, HypercubeSlotsMode},
 };
 use qops_hypercube::Coord5D;
 
