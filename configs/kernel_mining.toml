@@ -1,0 +1,131 @@
+# Hypercube Kernel Mining Configuration
+# Configuration for the Mining Kernel M = (Q, S, F, R)
+
+# Enable verbose logging
+verbose = false
+
+# Output directory for generated artefacts
+output_dir = "./output"
+
+# ============================================================================
+# State Space Configuration
+# ============================================================================
+[state]
+# Number of dimensions (5 for core signature: psi, rho, omega, chi, eta)
+dimensions = 5
+
+# Use extended state beyond core signature
+use_extended = false
+
+# Normalization mode: "none", "clamp", "min_max", "z_score"
+normalization = "clamp"
+
+# ============================================================================
+# Resonance Configuration
+# ============================================================================
+[resonance]
+# Resonance model: "simple", "weighted", "extended", "geometric", "harmonic"
+model = "simple"
+
+# Minimum threshold for acceptance
+min_threshold = 0.3
+
+# Target threshold for optimization
+target_threshold = 0.7
+
+# Alpha parameter for extended resonance: R(v) = psi*rho*omega*(1 + alpha*chi - beta*eta)
+alpha = 0.2
+
+# Beta parameter for extended resonance
+beta = 0.1
+
+# Custom weights for weighted resonance model
+[resonance.weights]
+psi = 1.0    # Intensity/amplitude weight
+rho = 1.0    # Coherence/correlation weight
+omega = 1.0  # Frequency/periodicity weight
+chi = 0.0    # Coupling/entanglement weight (set >0 for extended model)
+eta = 0.0    # Dissipation/decay weight (set >0 for extended model)
+
+# ============================================================================
+# Mining Configuration
+# ============================================================================
+[mining]
+# Maximum iterations for mining
+max_iterations = 1000
+
+# Target resonance score
+target_resonance = 0.7
+
+# Exploration rate (0.0 = exploit only, 1.0 = explore only)
+exploration_rate = 0.3
+
+# Search strategy: "greedy", "stochastic", "beam", "evolutionary", "triton", "hybrid"
+strategy = "hybrid"
+
+# Beam width for beam search strategy
+beam_width = 10
+
+# Population size for evolutionary strategy
+population_size = 50
+
+# Mutation rate for evolutionary strategy (0.0-1.0)
+mutation_rate = 0.1
+
+# Number of elite candidates to preserve
+elite_count = 5
+
+# Maximum candidates to track
+max_candidates = 100
+
+# Enable parallel processing
+parallel = true
+
+# Random seed for reproducibility (optional, comment out for random)
+# seed = 42
+
+# ============================================================================
+# Materialization Configuration
+# ============================================================================
+[materialization]
+# Output format: "json", "toml", "yaml", "text", "binary"
+output_format = "json"
+
+# Generate intermediate files during processing
+generate_intermediates = false
+
+# Validate artefacts before writing
+validate = true
+
+# Overwrite existing files
+overwrite = false
+
+# ============================================================================
+# Ledger Configuration
+# ============================================================================
+[ledger]
+# Storage type: "memory", "file", "hybrid"
+storage = "file"
+
+# Path for file-based ledger (JSONL format)
+path = "./ledger.jsonl"
+
+# Verify chain integrity on load
+verify_on_load = true
+
+# ============================================================================
+# Domain Adapter Configuration (Optional)
+# ============================================================================
+# [adapters.blueprint]
+# adapter_type = "blueprint"
+# enabled = true
+# [adapters.blueprint.settings]
+# default_type = "generic"
+
+# [adapters.code]
+# adapter_type = "code"
+# enabled = true
+# [adapters.code.weights]
+# psi = 0.8
+# rho = 1.2
+# omega = 1.0

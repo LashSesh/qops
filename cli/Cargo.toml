@@ -22,6 +22,7 @@ qops-adapters = { workspace = true }
 qops-triton = { workspace = true }
 qops-hypercube = { workspace = true }
 qops-slots = { workspace = true }
+qops-kernel = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 anyhow = { workspace = true }
