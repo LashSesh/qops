@@ -11,6 +11,8 @@ qops-core = { workspace = true }
 qops-circuits = { path = "../circuits" }
 qops-algorithms = { path = "../algorithms" }
 qops-quantum = { workspace = true }
+qops-hypercube = { path = "../hypercube" }
+qops-slots = { path = "../slots" }
 nalgebra = { workspace = true }
 num-complex = { workspace = true }
 rand = { workspace = true }

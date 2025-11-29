@@ -497,6 +497,84 @@ QOPS fuses two systems:
    - Adaptive temperature annealing
    - Topology-aware exploration
 
+## Benchmarks & Scientific Use
+
+QOPS includes a comprehensive benchmark suite for evaluating quantum algorithms, hypercube operations, and system performance. The benchmarks are ported from the QSO system and extended with new QOPS/FUQ!/Hypercube capabilities.
+
+### Quick Start
+
+```bash
+# Run quick benchmarks (minimal subset for CI/development)
+cargo run --release --bin qops -- benchmark quick
+
+# Run specific benchmark suite
+cargo run --release --bin qops -- benchmark vqe
+cargo run --release --bin qops -- benchmark qaoa
+cargo run --release --bin qops -- benchmark hypercube
+
+# Run with small mode (faster execution, fewer iterations)
+cargo run --release --bin qops -- benchmark vqe --small
+
+# Run all benchmarks (full suite)
+cargo run --release --bin qops -- benchmark all
+
+# Specify custom output directory
+cargo run --release --bin qops -- benchmark vqe --output my_results/
+```
+
+### Available Benchmarks
+
+#### Ported QSO Benchmarks
+
+| Benchmark | Command | Description |
+|-----------|---------|-------------|
+| VQE | `benchmark vqe` | Variational Quantum Eigensolver ground state estimation |
+| VQC | `benchmark vqc` | Variational Quantum Classifier for QML |
+| QAOA | `benchmark qaoa` | Quantum Approximate Optimization (MaxCut) |
+| Quantum Walk | `benchmark quantum-walk` | Continuous-time quantum walks on graphs |
+| Advanced | `benchmark advanced` | Grover search, QFT, QPE algorithms |
+| Integration | `benchmark integration` | Cross-module compatibility tests |
+| Cross-System | `benchmark cross` | Framework comparison (vs Qiskit/Cirq/PennyLane) |
+
+#### New QOPS/Hypercube Benchmarks
+
+| Benchmark | Command | Description |
+|-----------|---------|-------------|
+| Hypercube | `benchmark hypercube` | Hypercube-HDAG cascade performance (H^n → H^1) |
+| Mining | `benchmark mining` | Operator and sequence mining efficiency |
+| Topology | `benchmark topology` | Chern numbers, Berry phases, resonance metrics |
+| GUI Latency | `benchmark gui-latency` | Backend operation latency for GUI flows |
+
+#### Composite Commands
+
+| Command | Description |
+|---------|-------------|
+| `benchmark quick` | Minimal CI subset (VQE, QAOA, QWalk, Hypercube in small mode) |
+| `benchmark all` | Full benchmark suite with all types |
+
+### Output Format
+
+Results are saved as JSON files in `bench_results/` (or custom directory via `--output`):
+- `vqe_bench.json`, `qaoa_bench.json`, etc.
+- Each file includes: timestamp, git commit, system info, metrics, and summary statistics
+
+### CI Integration
+
+Benchmarks run automatically via GitHub Actions (`.github/workflows/benchmarks.yml`):
+
+| Mode | Trigger | Benchmarks | Artifact Retention |
+|------|---------|------------|-------------------|
+| Quick | Push/PR to main | VQE, QAOA, QWalk, Hypercube (small) | 30 days |
+| Full | Manual dispatch | All benchmark types | 90 days |
+| Nightly | Schedule (2:00 UTC) | All + regression detection | 365 days |
+
+Results are uploaded as artifacts suitable for scientific analysis and DOI-backed technical reports.
+
+### Documentation
+
+- **[BENCHMARK_OVERVIEW.md](BENCHMARK_OVERVIEW.md)** — Detailed guide for all benchmark types
+- **[BENCHMARK_SCHEMA.md](BENCHMARK_SCHEMA.md)** — JSON output format specification
+
 ## License
 
 MIT License - see [LICENSE](LICENSE) for details.
