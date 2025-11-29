@@ -160,7 +160,7 @@ pub async fn run_genesis_mining(
 /// Get operator families from the last mining session
 #[tauri::command]
 pub async fn get_genesis_families(
-    state: State<'_, AppState>,
+    _state: State<'_, AppState>,
 ) -> Result<Vec<FamilyDto>> {
     // For now, return empty - in full implementation would cache families
     Ok(vec![])

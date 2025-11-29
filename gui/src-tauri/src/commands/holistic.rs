@@ -395,9 +395,9 @@ pub async fn run_holistic_mining(
 
     // Convert first monolith if present
     let monolith = result.monoliths.first().map(|m| MonolithDto {
-        coherence: m.coherence,
-        family_count: m.family_count,
-        families: m.families.iter().map(|f| FinalizedFamilyDto {
+        coherence: m.mandorla_score,
+        family_count: m.family_ids.len(),
+        families: result.finalized_families.iter().take(m.family_ids.len()).map(|f| FinalizedFamilyDto {
             name: f.name.clone(),
             member_count: f.member_count,
             avg_resonance: f.avg_resonance,
@@ -408,7 +408,7 @@ pub async fn run_holistic_mining(
             },
             finalization_time: chrono::Utc::now().to_rfc3339(),
         }).collect(),
-        finalized: m.finalized,
+        finalized: true,
         creation_time: chrono::Utc::now().to_rfc3339(),
     });
 
@@ -672,9 +672,9 @@ pub async fn run_pfauenthron_stage(
     };
 
     let monolith_dto = monolith.map(|m| MonolithDto {
-        coherence: m.coherence,
-        family_count: m.family_count,
-        families: m.families.iter().map(|f| FinalizedFamilyDto {
+        coherence: m.mandorla_score,
+        family_count: m.family_ids.len(),
+        families: pfau_state.finalized_families.iter().take(m.family_ids.len()).map(|f| FinalizedFamilyDto {
             name: f.name.clone(),
             member_count: f.member_count,
             avg_resonance: f.avg_resonance,
@@ -685,7 +685,7 @@ pub async fn run_pfauenthron_stage(
             },
             finalization_time: chrono::Utc::now().to_rfc3339(),
         }).collect(),
-        finalized: m.finalized,
+        finalized: true,
         creation_time: chrono::Utc::now().to_rfc3339(),
     });
 

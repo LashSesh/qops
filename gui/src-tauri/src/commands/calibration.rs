@@ -42,7 +42,7 @@ pub struct AutoTuneResultDto {
 pub async fn run_calibration(
     state: State<'_, AppState>,
     steps: usize,
-    target: f64,
+    _target: f64,
 ) -> Result<CalibrationResultDto> {
     if steps == 0 || steps > 1000 {
         return Err(AppError::InvalidParameter(
@@ -76,7 +76,15 @@ pub async fn run_calibration(
 
     let accepted_count = results.iter().filter(|r| r.accepted).count();
 
+    // Get final performance before moving calibrator
     let final_perf = calibrator.current_performance();
+    let final_signature = SignatureDto {
+        psi: final_perf.psi,
+        rho: final_perf.rho,
+        omega: final_perf.omega,
+        chi: None,
+        eta: None,
+    };
 
     // Store calibrator for later queries
     {
@@ -86,13 +94,7 @@ pub async fn run_calibration(
 
     Ok(CalibrationResultDto {
         steps: step_dtos,
-        final_signature: SignatureDto {
-            psi: final_perf.psi,
-            rho: final_perf.rho,
-            omega: final_perf.omega,
-            chi: None,
-            eta: None,
-        },
+        final_signature,
         accepted_count,
     })
 }
@@ -145,7 +147,7 @@ pub async fn run_hyperparameter_sweep(
         parallel: true,
     };
 
-    let sweep = HyperparameterSweep::new(config);
+    let mut sweep = HyperparameterSweep::new(config);
     let result = sweep.run();
 
     let evaluations: Vec<SweepEvaluationDto> = result.evaluations
@@ -185,7 +187,7 @@ pub async fn run_auto_tune(
         ));
     }
 
-    let tuner = AutoTuner::new(target_resonance);
+    let mut tuner = AutoTuner::new(target_resonance);
     let result = tuner.tune(max_iterations);
 
     Ok(AutoTuneResultDto {
