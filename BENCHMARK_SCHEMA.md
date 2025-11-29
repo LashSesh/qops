@@ -1,6 +1,14 @@
 # QOPS Benchmark JSON Schema
 
-This document defines the JSON schema for all QOPS benchmark output files.
+This document defines the JSON schema for all QOPS benchmark output files. Understanding this schema enables automated processing of benchmark results for scientific reports and CI regression detection.
+
+## Overview
+
+All benchmark output files are stored in `bench_results/` (or custom directory) with names like:
+- `vqe_bench.json`
+- `qaoa_bench.json`
+- `hypercube_cascade_bench.json`
+- etc.
 
 ## Top-Level Structure
 

@@ -2,6 +2,13 @@
 
 This document describes the benchmark suites available in QOPS, covering both the ported QSO benchmark families and the new QOPS/FUQ!/Hypercube benchmarks.
 
+## Background
+
+The QOPS benchmark framework evolved from the Metatron QSO system and provides:
+- **Reproducible** benchmarks with git commit tracking and system info
+- **Extensible** architecture for adding new benchmark types
+- **Automated** CI integration via GitHub Actions
+
 ## Quick Start
 
 ```bash
@@ -259,16 +266,30 @@ Key fields in every output:
 
 ## CI Integration
 
-Benchmarks are automatically run via GitHub Actions:
+Benchmarks are automatically run via GitHub Actions (`.github/workflows/benchmarks.yml`):
 
-1. **Quick Benchmarks**: On every push/PR to main
-2. **Full Suite**: On manual workflow dispatch
-3. **Nightly**: Scheduled at 2:00 AM UTC with regression detection
+### Workflow Modes
 
-Artifacts are uploaded and retained:
-- Quick: 30 days
-- Full: 90 days
-- Nightly: 365 days (for scientific analysis)
+| Mode | Trigger | Description |
+|------|---------|-------------|
+| **Quick** | `push` / `pull_request` to main | Runs minimal benchmark subset for sanity checking |
+| **Full** | `workflow_dispatch` (manual) | Runs complete benchmark suite |
+| **Nightly** | `schedule` (2:00 AM UTC) | Runs full suite with regression detection |
+
+### Artifact Retention
+
+| Mode | Retention |
+|------|-----------|
+| Quick | 30 days |
+| Full | 90 days |
+| Nightly | 365 days (for scientific analysis) |
+
+### Regression Detection
+
+The nightly workflow compares results against the previous successful run and flags:
+- ⚠️ Regressions: >20% slowdown
+- 🎉 Improvements: >20% speedup
+- ✅ Stable: Within ±20%
 
 ---
 
