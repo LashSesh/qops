@@ -373,50 +373,13 @@ fn run_holistic_mining(agents: usize, steps: usize, triton: bool, preset: &str, 
     let mut session = HolisticMiningSession::new(config);
     let start = Instant::now();
 
-    // Stage 1: Discovery
-    print_stage_header("Discovery", "blue");
-    let pb = create_stage_spinner("Discovering operators...");
-    session.run_discovery();
+    // Run complete mining pipeline
+    print_stage_header("Holistic Mining Pipeline", "blue");
+    let pb = create_stage_spinner("Running holistic mining (Discovery → Kosmokrator → Chronokrator → Pfauenthron)...");
+    
+    let result = session.mine();
+    
     pb.finish_and_clear();
-    println!("  {} operators discovered", session.candidates().len());
-
-    // Stage 2: Kosmokrator Filter
-    print_stage_header("Kosmokrator Filter", "violet");
-    let pb = create_stage_spinner("Proof-of-Resonance filtering...");
-    session.run_kosmokrator();
-    pb.finish_and_clear();
-    let kos_stats = session.kosmokrator_stats();
-    println!("  Candidates:  {} -> {}", kos_stats.input_count, kos_stats.passed_count);
-    println!("  Avg kappa:   {:.4}", kos_stats.avg_kappa);
-    println!("  Telescope:   {} adjustments", kos_stats.telescope_adjustments);
-
-    // Stage 3: Chronokrator Expansion
-    print_stage_header("Chronokrator Expansion", "cyan");
-    let pb = create_stage_spinner("Resonance expansion...");
-    session.run_chronokrator();
-    pb.finish_and_clear();
-    let chrono_stats = session.chronokrator_stats();
-    println!("  Channels:    {}", chrono_stats.active_channels);
-    println!("  D_total:     {:.4}", chrono_stats.d_total);
-    println!("  Exkalibration magnitude: {:.4}", chrono_stats.exkalibration_magnitude);
-    if chrono_stats.spike_count > 0 {
-        println!("  {} detected!", format!("{} spikes", chrono_stats.spike_count).yellow());
-    }
-
-    // Stage 4: Pfauenthron Collapse
-    print_stage_header("Pfauenthron/Monolith", "yellow");
-    let pb = create_stage_spinner("Mandorla convergence...");
-    session.run_pfauenthron();
-    pb.finish_and_clear();
-    let pfau_stats = session.pfauenthron_stats();
-    println!("  Ophanim:     {} active", pfau_stats.ophanim_count);
-    println!("  S_Mandorla:  {:.4}", pfau_stats.mandorla_strength);
-    if pfau_stats.monolith_formed {
-        println!("  {} Monolith formed!", "OK".green().bold());
-    }
-
-    // Final result
-    let result = session.finalize();
     let elapsed = start.elapsed();
 
     println!("\n{}", "=".repeat(60).dimmed());
@@ -424,10 +387,11 @@ fn run_holistic_mining(agents: usize, steps: usize, triton: bool, preset: &str, 
     println!("{}", "=".repeat(60).dimmed());
 
     println!("\n{}", "Final Results:".green());
-    println!("  Finalized families: {}", result.finalized_families.len());
-    println!("  Best resonance:     {:.4}", result.best_resonance);
-    println!("  Matrix outputs:     {}", result.matrix_outputs);
-    println!("  Duration:           {:?}", elapsed);
+    println!("  Candidates discovered: {}", session.candidates().len());
+    println!("  Best resonance:        {:.4}", result.best_resonance);
+    println!("  Total steps:           {}", result.total_steps);
+    println!("  Duration:              {:?}", elapsed);
+    println!("  Stage:                 {:?}", session.stage());
 
     // Show top families
     if !result.finalized_families.is_empty() {
@@ -465,47 +429,55 @@ fn run_stage_kosmokrator(kappa: f64, epsilon: f64, export: bool) {
     println!("{}", "Proof-of-Resonance Exclusion Axis".magenta());
     println!("{}\n", "=".repeat(50).dimmed());
 
-    use qops_core::{KosmokratorConfig, KosmokratorState};
-    use qops_genesis::MetatronCube;
+    use qops_core::{KosmokratorConfig, KosmokratorState, OperatorCandidate, Signature5D};
 
     let config = KosmokratorConfig {
         kappa_threshold: kappa,
-        stability_epsilon: epsilon,
-        telescope_enabled: true,
-        history_window: 50,
+        epsilon,
+        telescope_gamma: 1.0,
+        stability_window: 50,
         ..Default::default()
     };
 
     println!("{}", "Configuration:".yellow());
     println!("  kappa threshold: {:.3}", kappa);
-    println!("  stability epsilon: {:.4}", epsilon);
+    println!("  epsilon: {:.4}", epsilon);
     println!("  Telescope Operator: {}", "Enabled".green());
     println!();
 
-    // Initialize Metatron Cube for candidate generation
-    let cube = MetatronCube::new();
     let mut state = KosmokratorState::new(config);
 
     let pb = create_stage_spinner("Running Proof-of-Resonance...");
 
-    // Process sample candidates
-    let num_candidates = 100;
-    for i in 0..num_candidates {
-        let node = i % 5040;
-        // Simulated phase from S7 position
-        let phase = (node as f64 * std::f64::consts::PI / 2520.0).sin();
-        state.add_phase(phase);
-    }
+    // Generate sample candidates
+    let candidates: Vec<OperatorCandidate> = (0..20).map(|i| {
+        OperatorCandidate {
+            id: format!("cand{}", i),
+            signature: Signature5D::default(),
+            phase: (i as f64 * 0.2).sin(),
+            resonance: 0.5 + 0.4 * ((i as f64 * 0.3).cos()),
+            stability: 0.7 + 0.2 * ((i as f64 * 0.1).sin()),
+            is_mandorla: i % 3 == 0,
+            node_index: i,
+            discovered_at: i as f64 * 0.05,
+        }
+    }).collect();
 
-    let result = state.compute_por();
+    // Get phases for PoR computation
+    let phases: Vec<f64> = candidates.iter().map(|c| c.phase).collect();
+    let result = state.compute_por(&phases, 1.0);
+
+    // Apply filter
+    let survivors = state.filter(candidates.clone(), 1.0);
+
     pb.finish_and_clear();
 
     println!("{}", "Results:".green().bold());
     println!("{}", "-".repeat(50).dimmed());
     println!("  PoR kappa:      {:.4}", result.kappa);
-    println!("  Coherence:      {:.4}", result.coherence);
+    println!("  Stability:      {:.4}", result.stability);
     println!("  Passed:         {}", if result.passed { "YES".green() } else { "NO".red() });
-    println!("  Telescope adj:  {}", state.telescope_adjustments());
+    println!("  Candidates:     {} -> {} survivors", candidates.len(), survivors.len());
 
     if export {
         println!("\n{}: kosmokrator_result.json", "Exporting".yellow());
@@ -517,13 +489,12 @@ fn run_stage_chronokrator(channels: usize, threshold: f64, visualize: bool) {
     println!("{}", "Resonance Dynamics Expansion Axis".cyan());
     println!("{}\n", "=".repeat(50).dimmed());
 
-    use qops_core::{ChronokratorConfig, ChronokratorState};
+    use qops_core::{ChronokratorConfig, ChronokratorState, OperatorCandidate, Signature5D};
 
     let config = ChronokratorConfig {
         num_channels: channels,
         base_threshold: threshold,
-        exkalibration_enabled: true,
-        spike_detection: true,
+        compute_exkalibration: true,
         ..Default::default()
     };
 
@@ -531,54 +502,51 @@ fn run_stage_chronokrator(channels: usize, threshold: f64, visualize: bool) {
     println!("  Channels: {}", channels);
     println!("  Base threshold: {:.3}", threshold);
     println!("  Exkalibration: {}", "Enabled".green());
-    println!("  Spike detection: {}", "Enabled".green());
     println!();
 
     let mut state = ChronokratorState::new(config);
 
     let pb = create_stage_spinner("Running resonance expansion...");
 
-    // Simulate resonance dynamics
-    let time_steps = 100;
-    for t in 0..time_steps {
-        let time = t as f64 * 0.1;
-        // Simulated multi-channel resonance
-        for ch in 0..channels {
-            let phase_offset = ch as f64 * std::f64::consts::PI / (channels as f64);
-            let resonance = 0.5 + 0.3 * (time + phase_offset).sin();
-            state.update_channel(ch, resonance, time);
+    // Create sample candidates for expansion
+    let candidates: Vec<OperatorCandidate> = (0..channels).map(|i| {
+        OperatorCandidate {
+            id: format!("op{}", i),
+            signature: Signature5D::default(),
+            phase: 0.5 + 0.1 * i as f64,
+            resonance: 0.7 + 0.05 * i as f64,
+            stability: 0.8,
+            is_mandorla: i % 2 == 0,
+            node_index: i,
+            discovered_at: i as f64 * 0.1,
         }
-    }
+    }).collect();
 
-    let d_total = state.compute_d_total();
-    let exkal = state.compute_exkalibration();
-    let spikes = state.detect_spikes();
+    // Run expansion
+    let exkal = state.expand(&candidates, 1.0);
 
     pb.finish_and_clear();
 
+    let stats = state.stats();
+
     println!("{}", "Results:".green().bold());
     println!("{}", "-".repeat(50).dimmed());
-    println!("  D_total(t):     {:.4}", d_total);
-    println!("  Theta(t):       {:.4}", state.current_threshold());
-    println!("  Above threshold: {}", if d_total > state.current_threshold() {
+    println!("  D_total(t):     {:.4}", stats.current_d_total);
+    println!("  Theta(t):       {:.4}", stats.current_threshold);
+    println!("  Above threshold: {}", if stats.current_d_total > stats.current_threshold {
         "YES".green()
     } else {
         "NO".red()
     });
     println!();
 
-    println!("{}", "Exkalibration Vector E(t):".yellow());
-    println!("  nabla_psi:   {:.4}", exkal.nabla_psi);
-    println!("  nabla_rho:   {:.4}", exkal.nabla_rho);
-    println!("  nabla_omega: {:.4}", exkal.nabla_omega);
-    println!("  magnitude:   {:.4}", exkal.magnitude());
-
-    if !spikes.is_empty() {
-        println!("\n{}: {} detected", "Spikes".yellow().bold(), spikes.len());
-        for (i, spike) in spikes.iter().take(3).enumerate() {
-            println!("  {}. channel {} at t={:.2}, intensity={:.4}",
-                i + 1, spike.channel, spike.time, spike.intensity);
-        }
+    if let Some(e) = &exkal {
+        println!("{}", "Exkalibration Vector E(t):".yellow());
+        println!("  gradient:    {:?}", e.gradient);
+        println!("  magnitude:   {:.4}", e.magnitude);
+        println!("  valid:       {}", e.valid);
+    } else {
+        println!("{}", "No exkalibration vector (below threshold)".yellow());
     }
 
     if visualize {
@@ -592,12 +560,12 @@ fn run_stage_pfauenthron(mandorla_threshold: f64, ophanim_count: usize) {
     println!("{}", "O.P.H.A.N. Geometry / Mandorla Convergence".yellow());
     println!("{}\n", "=".repeat(50).dimmed());
 
-    use qops_core::{PfauenthronConfig, PfauenthronState};
+    use qops_core::{PfauenthronConfig, PfauenthronState, OperatorCandidate, Signature5D, ExkalibrationVector};
 
     let config = PfauenthronConfig {
         mandorla_threshold,
-        ophanim_count,
-        monolith_enabled: true,
+        num_ophanim: ophanim_count,
+        emit_monolith: true,
         ..Default::default()
     };
 
@@ -611,18 +579,34 @@ fn run_stage_pfauenthron(mandorla_threshold: f64, ophanim_count: usize) {
 
     let pb = create_stage_spinner("Computing Mandorla convergence...");
 
+    // Create sample candidates
+    let candidates = vec![
+        OperatorCandidate {
+            id: "op1".to_string(),
+            signature: Signature5D::default(),
+            phase: 0.5,
+            resonance: 0.85,
+            stability: 0.9,
+            is_mandorla: true,
+            node_index: 1,
+            discovered_at: 0.0,
+        },
+    ];
+
     // Initialize Ophanim nodes
-    state.initialize_ophanim();
+    state.init_ophanim(&candidates);
 
-    // Simulate Gabriel-Oriphiel convergence
-    for step in 0..50 {
-        let p_gabriel = 0.5 + 0.4 * (step as f64 * 0.1).sin();
-        let i_oriphiel = 0.5 + 0.4 * (step as f64 * 0.1).cos();
-        state.update_convergence(p_gabriel, i_oriphiel);
-    }
+    // Create exkalibration vector for mandorla computation
+    let exkal = ExkalibrationVector {
+        gradient: [0.1, 0.2, 0.1, 0.05, 0.05],
+        magnitude: 0.25,
+        direction: [0.4, 0.4, 0.3, 0.1, 0.1],
+        timestamp: 1.0,
+        valid: true,
+    };
 
-    let mandorla = state.compute_mandorla();
-    let monolith = state.attempt_monolith_formation();
+    let mandorla = state.compute_mandorla(&candidates, &exkal, 1.0);
+    let monolith = state.collapse(&candidates, &exkal, 1.0);
 
     pb.finish_and_clear();
 
@@ -630,27 +614,24 @@ fn run_stage_pfauenthron(mandorla_threshold: f64, ophanim_count: usize) {
     println!("{}", "-".repeat(50).dimmed());
 
     println!("\n{}", "Ophanim State:".cyan());
-    for (i, oph) in state.ophanim().iter().enumerate() {
-        let status = if oph.active { "active".green() } else { "inactive".dimmed() };
-        println!("  Ophanim {}: resonance={:.4}, {}", i, oph.resonance, status);
+    for (i, oph) in state.ophanim.iter().enumerate() {
+        println!("  Ophanim {}: phase={:.4}, lambda={:.4}", i, oph.phase, oph.lambda);
     }
 
     println!("\n{}", "Mandorla Field:".yellow());
-    println!("  P_Gabriel:    {:.4}", mandorla.p_gabriel);
-    println!("  I_Oriphiel:   {:.4}", mandorla.i_oriphiel);
-    println!("  S_Mandorla:   {:.4}", mandorla.strength);
-    println!("  Convergence:  {}", if mandorla.strength >= mandorla_threshold {
-        "ACHIEVED".green().bold()
+    println!("  Convergence score: {:.4}", mandorla.convergence_score);
+    println!("  Is converged:      {}", if mandorla.is_converged {
+        "YES".green().bold()
     } else {
-        "In progress".yellow()
+        "No".yellow()
     });
 
     if let Some(mono) = monolith {
         println!("\n{} {}", "MONOLITH".green().bold(), "FORMED".green().bold());
         println!("{}", "-".repeat(30).dimmed());
-        println!("  Coherence:    {:.4}", mono.coherence);
-        println!("  Families:     {}", mono.family_count);
-        println!("  Finalized:    {}", mono.finalized);
+        println!("  Magnitude:    {:.4}", mono.magnitude);
+        println!("  Mandorla:     {:.4}", mono.mandorla_score);
+        println!("  Families:     {}", mono.family_ids.len());
     }
 }
 
@@ -667,7 +648,8 @@ fn run_spiral_search(adaptive: bool, iterations: usize, export: bool) {
         spiral: SpiralParams {
             expansion_rate: 1.618, // Golden ratio
             initial_radius: 1.0,
-            max_layers: 7,
+            layers: 7,
+            ..Default::default()
         },
         max_iterations: iterations,
         ..Default::default()
@@ -676,7 +658,7 @@ fn run_spiral_search(adaptive: bool, iterations: usize, export: bool) {
     println!("{}", "Configuration:".yellow());
     println!("  Iterations: {}", iterations);
     println!("  Expansion rate: {:.3} (golden)", config.spiral.expansion_rate);
-    println!("  Max layers: {}", config.spiral.max_layers);
+    println!("  Layers: {}", config.spiral.layers);
     println!("  Adaptive: {}", if adaptive { "Yes".green() } else { "No".dimmed() });
     println!();
 
@@ -691,10 +673,7 @@ fn run_spiral_search(adaptive: bool, iterations: usize, export: bool) {
         let mut optimizer = AdaptiveTritonOptimizer::new(adaptive_config);
         let pb = create_stage_spinner("Running adaptive spiral search...");
 
-        let result = optimizer.optimize(|sig| {
-            // Resonance scoring function
-            qops_core::resonance_5d(sig)
-        });
+        let result = optimizer.optimize();
 
         pb.finish_and_clear();
 
@@ -702,13 +681,12 @@ fn run_spiral_search(adaptive: bool, iterations: usize, export: bool) {
         println!("{}", "-".repeat(50).dimmed());
         println!("  Best score:     {:.6}", result.best_score);
         println!("  Iterations:     {}", result.iterations);
-        println!("  Layers explored: {}", result.layers_explored);
         println!("  Converged:      {}", if result.converged { "Yes".green() } else { "No".red() });
 
         if let Some(holistic_out) = &result.holistic_output {
             println!("\n{}", "Holistic Integration:".cyan());
-            println!("  Matrix outputs: {}", holistic_out.outputs);
-            println!("  Stage: {:?}", holistic_out.final_stage);
+            println!("  Valid outputs: {}", holistic_out.valid_outputs);
+            println!("  Stage: {:?}", holistic_out.current_stage);
         }
     } else {
         use qops_triton::TritonOptimizer;
@@ -716,9 +694,7 @@ fn run_spiral_search(adaptive: bool, iterations: usize, export: bool) {
         let mut optimizer = TritonOptimizer::new(config);
         let pb = create_stage_spinner("Running spiral search...");
 
-        let result = optimizer.optimize(|sig| {
-            qops_core::resonance_5d(sig)
-        });
+        let result = optimizer.optimize();
 
         pb.finish_and_clear();
 
@@ -738,33 +714,56 @@ fn run_finalize_monolith(export: bool) {
     println!("\n{}", "Monolith Finalization".yellow().bold());
     println!("{}\n", "=".repeat(50).dimmed());
 
-    use qops_core::{HolisticConfig, HolisticMatrix};
+    use qops_core::{HolisticConfig, HolisticMatrix, OperatorCandidate, Signature5D};
 
     let config = HolisticConfig::default();
     let mut matrix = HolisticMatrix::new(config);
 
     let pb = create_stage_spinner("Finalizing Monolith structure...");
 
-    // Simulate matrix processing
-    matrix.process_pipeline();
+    // Create sample candidates
+    let candidates = vec![
+        OperatorCandidate {
+            id: "op1".to_string(),
+            signature: Signature5D::default(),
+            phase: 0.5,
+            resonance: 0.85,
+            stability: 0.9,
+            is_mandorla: true,
+            node_index: 1,
+            discovered_at: 0.0,
+        },
+        OperatorCandidate {
+            id: "op2".to_string(),
+            signature: Signature5D::default(),
+            phase: 0.7,
+            resonance: 0.78,
+            stability: 0.85,
+            is_mandorla: false,
+            node_index: 2,
+            discovered_at: 0.1,
+        },
+    ];
+    let output = matrix.process(candidates, 1.0);
 
     pb.finish_and_clear();
 
-    if let Some(monolith) = matrix.get_monolith() {
+    if output.valid {
         println!("{} {}", "MONOLITH".green().bold(), "STRUCTURE".green().bold());
         println!("{}", "=".repeat(40).dimmed());
         println!();
-        println!("  Coherence:        {:.4}", monolith.coherence);
-        println!("  Family count:     {}", monolith.family_count);
-        println!("  Finalized:        {}", if monolith.finalized { "Yes".green() } else { "No".yellow() });
+
+        let stats = matrix.stats();
+        println!("  Current stage:    {:?}", stats.current_stage);
+        println!("  Valid outputs:    {}", stats.valid_outputs);
+        println!("  Total outputs:    {}", stats.total_outputs);
         println!();
 
-        if !monolith.families.is_empty() {
-            println!("{}", "Embedded Families:".yellow());
-            for (i, family) in monolith.families.iter().take(5).enumerate() {
-                println!("  {}. {} (resonance: {:.4})",
-                    i + 1, family.name.cyan(), family.avg_resonance);
-            }
+        if let Some(exkal) = &output.exkalibration {
+            println!("{}", "Exkalibration:".yellow());
+            println!("  magnitude:   {:.4}", exkal.magnitude);
+            println!("  direction:   {:?}", exkal.direction);
+            println!("  valid:       {}", exkal.valid);
         }
 
         if export {
@@ -800,37 +799,11 @@ fn create_stage_spinner(msg: &str) -> ProgressBar {
     pb
 }
 
-fn print_resonance_dynamics(state: &qops_core::ChronokratorState) {
-    // ASCII visualization of resonance dynamics
-    let history = state.channel_history();
-    if history.is_empty() {
-        return;
-    }
-
+fn print_resonance_dynamics(_state: &qops_core::ChronokratorState) {
+    // ASCII visualization of resonance dynamics (simplified)
     println!();
-    let height = 8;
-    let width = 50;
-
-    for row in 0..height {
-        let threshold = 1.0 - (row as f64 / height as f64);
-        print!("{:.1} |", threshold);
-        for col in 0..width {
-            let idx = col * history.len() / width;
-            if idx < history.len() {
-                let val = history[idx];
-                if val >= threshold {
-                    print!("{}", "#".cyan());
-                } else {
-                    print!(" ");
-                }
-            } else {
-                print!(" ");
-            }
-        }
-        println!();
-    }
-    println!("    +{}", "-".repeat(width));
-    println!("     t=0{}t=max", " ".repeat(width - 10));
+    println!("{}", "Resonance dynamics visualization not available in this mode.".dimmed());
+    println!("{}", "Use the GUI for full visualization.".dimmed());
 }
 
 // ============================================================================
@@ -1466,24 +1439,63 @@ fn run_compare() {
 struct BenchmarkArgs {
     #[command(subcommand)]
     benchmark: BenchmarkType,
+
+    /// Run in small/quick mode for faster execution
+    #[arg(long, global = true)]
+    small: bool,
+
+    /// Output directory for benchmark results
+    #[arg(short, long, global = true, default_value = "bench_results")]
+    output: String,
 }
 
 #[derive(Subcommand)]
 enum BenchmarkType {
-    /// Benchmark Grover's algorithm
-    Grover {
+    /// VQE (Variational Quantum Eigensolver) benchmarks
+    Vqe,
+    /// VQC (Variational Quantum Classifier) benchmarks
+    Vqc,
+    /// QAOA MaxCut benchmarks
+    Qaoa,
+    /// Quantum walk benchmarks (mixing/hitting time)
+    #[command(visible_alias = "qwalk")]
+    QuantumWalk,
+    /// Advanced algorithms benchmarks (Grover, QFT, QPE)
+    Advanced,
+    /// Integration benchmarks (cross-module compatibility)
+    Integration,
+    /// Cross-system comparison benchmarks
+    Cross,
+    /// Hypercube cascade benchmarks
+    Hypercube,
+    /// Mining benchmarks (operators, sequences)
+    Mining,
+    /// Topology/geometry benchmarks
+    Topology,
+    /// GUI latency benchmarks
+    #[command(name = "gui-latency")]
+    GuiLatency,
+    /// Run all benchmarks
+    All,
+    /// Run quick benchmark suite (for CI)
+    Quick,
+    /// Legacy Grover benchmark (deprecated)
+    #[command(name = "grover-legacy")]
+    GroverLegacy {
         /// Qubit counts (comma-separated)
         #[arg(short, long, default_value = "2,3,4")]
         qubits: String,
     },
-    /// Benchmark QFT
-    Qft {
+    /// Legacy QFT benchmark (deprecated)
+    #[command(name = "qft-legacy")]
+    QftLegacy {
         /// Qubit counts (comma-separated)
         #[arg(short, long, default_value = "2,3,4,5")]
         qubits: String,
     },
-    /// Benchmark state vector simulation
-    Simulation {
+    /// Legacy simulation benchmark (deprecated)
+    #[command(name = "sim-legacy")]
+    SimulationLegacy {
         /// Qubit counts (comma-separated)
         #[arg(short, long, default_value = "4,6,8,10")]
         qubits: String,
@@ -1491,10 +1503,319 @@ enum BenchmarkType {
 }
 
 fn run_benchmark(args: BenchmarkArgs) {
+    use qops_research::BenchmarkRunner;
+
+    let runner = BenchmarkRunner::new(&args.output, args.small);
+
     match args.benchmark {
-        BenchmarkType::Grover { qubits } => benchmark_grover(&qubits),
-        BenchmarkType::Qft { qubits } => benchmark_qft(&qubits),
-        BenchmarkType::Simulation { qubits } => benchmark_simulation(&qubits),
+        BenchmarkType::Vqe => run_bench_vqe(&runner),
+        BenchmarkType::Vqc => run_bench_vqc(&runner),
+        BenchmarkType::Qaoa => run_bench_qaoa(&runner),
+        BenchmarkType::QuantumWalk => run_bench_qwalk(&runner),
+        BenchmarkType::Advanced => run_bench_advanced(&runner),
+        BenchmarkType::Integration => run_bench_integration(&runner),
+        BenchmarkType::Cross => run_bench_cross(&runner),
+        BenchmarkType::Hypercube => run_bench_hypercube(&runner),
+        BenchmarkType::Mining => run_bench_mining(&runner),
+        BenchmarkType::Topology => run_bench_topology(&runner),
+        BenchmarkType::GuiLatency => run_bench_gui_latency(&runner),
+        BenchmarkType::All => run_bench_all(&runner),
+        BenchmarkType::Quick => run_bench_quick(&runner),
+        BenchmarkType::GroverLegacy { qubits } => benchmark_grover(&qubits),
+        BenchmarkType::QftLegacy { qubits } => benchmark_qft(&qubits),
+        BenchmarkType::SimulationLegacy { qubits } => benchmark_simulation(&qubits),
+    }
+}
+
+fn run_bench_vqe(runner: &qops_research::BenchmarkRunner) {
+    println!("\n{}", "VQE Benchmark Suite".cyan().bold());
+    println!("{}\n", "=".repeat(50).dimmed());
+
+    let pb = create_stage_spinner("Running VQE benchmarks...");
+    match runner.run_vqe() {
+        Ok(output) => {
+            pb.finish_and_clear();
+            println!("{}", "Results:".green().bold());
+            println!("  Benchmarks run: {}", output.summary.total_benchmarks);
+            println!("  Total duration: {:.2} ms", output.summary.total_duration_ms);
+            println!("  Success rate: {:.1}%", output.summary.success_rate * 100.0);
+            println!("\n{}", output.suite.comparison_table());
+            println!("\n{}: {}/vqe_bench.json", "Saved to".yellow(), runner.output_dir);
+        }
+        Err(e) => {
+            pb.finish_and_clear();
+            println!("{}: {}", "Error".red(), e);
+        }
+    }
+}
+
+fn run_bench_vqc(runner: &qops_research::BenchmarkRunner) {
+    println!("\n{}", "VQC Benchmark Suite".cyan().bold());
+    println!("{}\n", "=".repeat(50).dimmed());
+
+    let pb = create_stage_spinner("Running VQC benchmarks...");
+    match runner.run_vqc() {
+        Ok(output) => {
+            pb.finish_and_clear();
+            println!("{}", "Results:".green().bold());
+            println!("  Benchmarks run: {}", output.summary.total_benchmarks);
+            println!("  Total duration: {:.2} ms", output.summary.total_duration_ms);
+            println!("\n{}", output.suite.comparison_table());
+            println!("\n{}: {}/vqc_bench.json", "Saved to".yellow(), runner.output_dir);
+        }
+        Err(e) => {
+            pb.finish_and_clear();
+            println!("{}: {}", "Error".red(), e);
+        }
+    }
+}
+
+fn run_bench_qaoa(runner: &qops_research::BenchmarkRunner) {
+    println!("\n{}", "QAOA Benchmark Suite".cyan().bold());
+    println!("{}\n", "=".repeat(50).dimmed());
+
+    let pb = create_stage_spinner("Running QAOA benchmarks...");
+    match runner.run_qaoa() {
+        Ok(output) => {
+            pb.finish_and_clear();
+            println!("{}", "Results:".green().bold());
+            println!("  Benchmarks run: {}", output.summary.total_benchmarks);
+            println!("  Total duration: {:.2} ms", output.summary.total_duration_ms);
+            println!("\n{}", output.suite.comparison_table());
+            println!("\n{}: {}/qaoa_bench.json", "Saved to".yellow(), runner.output_dir);
+        }
+        Err(e) => {
+            pb.finish_and_clear();
+            println!("{}: {}", "Error".red(), e);
+        }
+    }
+}
+
+fn run_bench_qwalk(runner: &qops_research::BenchmarkRunner) {
+    println!("\n{}", "Quantum Walk Benchmark Suite".cyan().bold());
+    println!("{}\n", "=".repeat(50).dimmed());
+
+    let pb = create_stage_spinner("Running quantum walk benchmarks...");
+    match runner.run_qwalk() {
+        Ok(output) => {
+            pb.finish_and_clear();
+            println!("{}", "Results:".green().bold());
+            println!("  Benchmarks run: {}", output.summary.total_benchmarks);
+            println!("  Total duration: {:.2} ms", output.summary.total_duration_ms);
+            println!("\n{}", output.suite.comparison_table());
+            println!("\n{}: {}/quantum_walk_bench.json", "Saved to".yellow(), runner.output_dir);
+        }
+        Err(e) => {
+            pb.finish_and_clear();
+            println!("{}: {}", "Error".red(), e);
+        }
+    }
+}
+
+fn run_bench_advanced(runner: &qops_research::BenchmarkRunner) {
+    println!("\n{}", "Advanced Algorithms Benchmark Suite".cyan().bold());
+    println!("{}\n", "=".repeat(50).dimmed());
+
+    let pb = create_stage_spinner("Running advanced algorithm benchmarks...");
+    match runner.run_advanced() {
+        Ok(output) => {
+            pb.finish_and_clear();
+            println!("{}", "Results:".green().bold());
+            println!("  Benchmarks run: {}", output.summary.total_benchmarks);
+            println!("  Total duration: {:.2} ms", output.summary.total_duration_ms);
+            println!("\n{}", output.suite.comparison_table());
+            println!("\n{}: {}/advanced_algorithms_bench.json", "Saved to".yellow(), runner.output_dir);
+        }
+        Err(e) => {
+            pb.finish_and_clear();
+            println!("{}: {}", "Error".red(), e);
+        }
+    }
+}
+
+fn run_bench_integration(runner: &qops_research::BenchmarkRunner) {
+    println!("\n{}", "Integration Benchmark Suite".cyan().bold());
+    println!("{}\n", "=".repeat(50).dimmed());
+
+    let pb = create_stage_spinner("Running integration benchmarks...");
+    match runner.run_integration() {
+        Ok(output) => {
+            pb.finish_and_clear();
+            println!("{}", "Results:".green().bold());
+            println!("  Benchmarks run: {}", output.summary.total_benchmarks);
+            println!("  Total duration: {:.2} ms", output.summary.total_duration_ms);
+            println!("\n{}", output.suite.comparison_table());
+            println!("\n{}: {}/integration_bench.json", "Saved to".yellow(), runner.output_dir);
+        }
+        Err(e) => {
+            pb.finish_and_clear();
+            println!("{}: {}", "Error".red(), e);
+        }
+    }
+}
+
+fn run_bench_cross(runner: &qops_research::BenchmarkRunner) {
+    println!("\n{}", "Cross-System Benchmark Suite".cyan().bold());
+    println!("{}\n", "=".repeat(50).dimmed());
+
+    let pb = create_stage_spinner("Running cross-system benchmarks...");
+    match runner.run_cross() {
+        Ok(output) => {
+            pb.finish_and_clear();
+            println!("{}", "Results:".green().bold());
+            println!("  Benchmarks run: {}", output.summary.total_benchmarks);
+            println!("  Total duration: {:.2} ms", output.summary.total_duration_ms);
+            println!("\n{}", output.suite.comparison_table());
+            println!("\n{}: {}/cross_system_bench.json", "Saved to".yellow(), runner.output_dir);
+        }
+        Err(e) => {
+            pb.finish_and_clear();
+            println!("{}: {}", "Error".red(), e);
+        }
+    }
+}
+
+fn run_bench_hypercube(runner: &qops_research::BenchmarkRunner) {
+    println!("\n{}", "Hypercube Cascade Benchmark Suite".cyan().bold());
+    println!("{}\n", "=".repeat(50).dimmed());
+
+    let pb = create_stage_spinner("Running hypercube benchmarks...");
+    match runner.run_hypercube() {
+        Ok(output) => {
+            pb.finish_and_clear();
+            println!("{}", "Results:".green().bold());
+            println!("  Benchmarks run: {}", output.summary.total_benchmarks);
+            println!("  Total duration: {:.2} ms", output.summary.total_duration_ms);
+            println!("\n{}", output.suite.comparison_table());
+            println!("\n{}: {}/hypercube_cascade_bench.json", "Saved to".yellow(), runner.output_dir);
+        }
+        Err(e) => {
+            pb.finish_and_clear();
+            println!("{}: {}", "Error".red(), e);
+        }
+    }
+}
+
+fn run_bench_mining(runner: &qops_research::BenchmarkRunner) {
+    println!("\n{}", "Mining Benchmark Suite".cyan().bold());
+    println!("{}\n", "=".repeat(50).dimmed());
+
+    let pb = create_stage_spinner("Running mining benchmarks...");
+    match runner.run_mining() {
+        Ok(output) => {
+            pb.finish_and_clear();
+            println!("{}", "Results:".green().bold());
+            println!("  Benchmarks run: {}", output.summary.total_benchmarks);
+            println!("  Total duration: {:.2} ms", output.summary.total_duration_ms);
+            println!("\n{}", output.suite.comparison_table());
+            println!("\n{}: {}/mining_bench.json", "Saved to".yellow(), runner.output_dir);
+        }
+        Err(e) => {
+            pb.finish_and_clear();
+            println!("{}: {}", "Error".red(), e);
+        }
+    }
+}
+
+fn run_bench_topology(runner: &qops_research::BenchmarkRunner) {
+    println!("\n{}", "Topology Benchmark Suite".cyan().bold());
+    println!("{}\n", "=".repeat(50).dimmed());
+
+    let pb = create_stage_spinner("Running topology benchmarks...");
+    match runner.run_topology() {
+        Ok(output) => {
+            pb.finish_and_clear();
+            println!("{}", "Results:".green().bold());
+            println!("  Benchmarks run: {}", output.summary.total_benchmarks);
+            println!("  Total duration: {:.2} ms", output.summary.total_duration_ms);
+            println!("\n{}", output.suite.comparison_table());
+            println!("\n{}: {}/topology_bench.json", "Saved to".yellow(), runner.output_dir);
+        }
+        Err(e) => {
+            pb.finish_and_clear();
+            println!("{}: {}", "Error".red(), e);
+        }
+    }
+}
+
+fn run_bench_gui_latency(runner: &qops_research::BenchmarkRunner) {
+    println!("\n{}", "GUI Latency Benchmark Suite".cyan().bold());
+    println!("{}\n", "=".repeat(50).dimmed());
+
+    let pb = create_stage_spinner("Running GUI latency benchmarks...");
+    match runner.run_gui_latency() {
+        Ok(output) => {
+            pb.finish_and_clear();
+            println!("{}", "Results:".green().bold());
+            println!("  Benchmarks run: {}", output.summary.total_benchmarks);
+            println!("  Total duration: {:.2} ms", output.summary.total_duration_ms);
+            println!("\n{}", output.suite.comparison_table());
+            println!("\n{}: {}/gui_latency_bench.json", "Saved to".yellow(), runner.output_dir);
+        }
+        Err(e) => {
+            pb.finish_and_clear();
+            println!("{}: {}", "Error".red(), e);
+        }
+    }
+}
+
+fn run_bench_all(runner: &qops_research::BenchmarkRunner) {
+    println!("\n{}", "Full Benchmark Suite".cyan().bold());
+    println!("{}\n", "=".repeat(50).dimmed());
+
+    println!("{}", "Running all benchmarks...".yellow());
+    println!();
+
+    let pb = create_stage_spinner("Running all benchmarks (this may take a while)...");
+    match runner.run_all() {
+        Ok(outputs) => {
+            pb.finish_and_clear();
+            println!("{}", "All benchmarks completed!".green().bold());
+            println!();
+
+            for output in &outputs {
+                println!("{}: {} benchmarks, {:.2} ms",
+                    output.benchmark_type.cyan(),
+                    output.summary.total_benchmarks,
+                    output.summary.total_duration_ms);
+            }
+
+            println!("\n{}: {}/", "Results saved to".yellow(), runner.output_dir);
+        }
+        Err(e) => {
+            pb.finish_and_clear();
+            println!("{}: {}", "Error".red(), e);
+        }
+    }
+}
+
+fn run_bench_quick(runner: &qops_research::BenchmarkRunner) {
+    println!("\n{}", "Quick Benchmark Suite (CI Mode)".cyan().bold());
+    println!("{}\n", "=".repeat(50).dimmed());
+
+    println!("{}", "Running quick benchmarks...".yellow());
+    println!();
+
+    let pb = create_stage_spinner("Running quick benchmarks...");
+    match runner.run_quick() {
+        Ok(outputs) => {
+            pb.finish_and_clear();
+            println!("{}", "Quick benchmarks completed!".green().bold());
+            println!();
+
+            for output in &outputs {
+                println!("{}: {} benchmarks, {:.2} ms",
+                    output.benchmark_type.cyan(),
+                    output.summary.total_benchmarks,
+                    output.summary.total_duration_ms);
+            }
+
+            println!("\n{}: {}/", "Results saved to".yellow(), runner.output_dir);
+        }
+        Err(e) => {
+            pb.finish_and_clear();
+            println!("{}: {}", "Error".red(), e);
+        }
     }
 }
 
