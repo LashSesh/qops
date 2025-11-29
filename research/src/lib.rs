@@ -38,6 +38,7 @@ pub mod visualization;
 pub mod comparison;
 pub mod report;
 pub mod error;
+pub mod qops_benchmarks;
 
 pub use benchmark::{Benchmark, BenchmarkConfig, BenchmarkResult, BenchmarkSuite};
 pub use experiment::{Experiment, ExperimentConfig, ExperimentResult, Parameter};
@@ -46,6 +47,13 @@ pub use visualization::{DataExport, PlotData, ExportFormat};
 pub use comparison::{Comparison, ComparisonResult, AlgorithmComparison};
 pub use report::{Report, ReportFormat, ReportSection};
 pub use error::{ResearchError, Result};
+pub use qops_benchmarks::{
+    BenchmarkRunner, BenchmarkOutput, BenchmarkMetadata, SystemInfo,
+    run_vqe_benchmarks, run_vqc_benchmarks, run_qaoa_benchmarks,
+    run_qwalk_benchmarks, run_advanced_benchmarks, run_integration_benchmarks,
+    run_cross_system_benchmarks, run_hypercube_benchmarks, run_mining_benchmarks,
+    run_topology_benchmarks, run_gui_latency_benchmarks,
+};
 
 /// Module version
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
