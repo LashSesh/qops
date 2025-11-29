@@ -583,6 +583,6 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 Contributions welcome! Please read our contributing guidelines and submit PRs.
 
-## Authors
+## Author
 
-QOPS Unified Team
+Sebastian Klemm
