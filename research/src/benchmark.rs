@@ -347,7 +347,7 @@ impl BenchmarkSuite {
 /// Pre-built quantum algorithm benchmarks
 pub mod quantum_benchmarks {
     use super::*;
-    use qops_circuits::{Circuit, QuantumRegister, Gate};
+    use qops_circuits::{Circuit, QuantumRegister};
     use qops_algorithms::{Grover, Oracle, QuantumFourierTransform};
 
     /// Benchmark Grover's algorithm scaling

@@ -2,7 +2,7 @@
 //!
 //! This module provides measurement operations for quantum states.
 
-use crate::{Complex, StateVector, QuantumRegister, Result, CircuitError, ZERO, ONE};
+use crate::{Complex, QuantumRegister, Result, CircuitError, ZERO, ONE};
 use nalgebra::DMatrix;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;

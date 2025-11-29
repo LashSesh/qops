@@ -8,9 +8,7 @@
 //! 3. Classical optimizer updates θ to minimize energy
 //! 4. Repeat until convergence
 
-use qops_circuits::{Circuit, Gate, QuantumRegister, Measurement, Complex};
-use crate::{AlgorithmError, Result};
-use nalgebra::DMatrix;
+use qops_circuits::{Circuit, QuantumRegister, Measurement};
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;
@@ -274,7 +272,7 @@ impl VQE {
             Optimizer::GradientDescent => {
                 let learning_rate = 0.1;
 
-                for iteration in 0..self.config.max_iterations {
+                for _iteration in 0..self.config.max_iterations {
                     let energy = self.evaluate_energy(&params);
                     energy_history.push(energy);
                     num_evaluations += 1;
@@ -306,7 +304,7 @@ impl VQE {
             Optimizer::SPSA => {
                 let a = 0.1;
                 let c = 0.1;
-                let alpha = 0.602;
+                let _alpha = 0.602;
                 let gamma = 0.101;
 
                 for k in 0..self.config.max_iterations {

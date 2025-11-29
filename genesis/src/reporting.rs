@@ -17,10 +17,8 @@
 //! let report = reporter.generate(ReportFormat::Markdown)?;
 //! ```
 
-use crate::holistic_mining::{HolisticMiningResult, StageLogEntry, StageMetrics};
-use crate::family::FamilyCharacteristics;
+use crate::holistic_mining::HolisticMiningResult;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 /// Report format options
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

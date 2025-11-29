@@ -3,7 +3,6 @@
 use crate::calibrator::{SeraphicCalibrator, CalibratorConfig, CalibrationResult};
 use qops_core::{Configuration, Signature3D, resonance_3d};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 /// Sweep configuration for hyperparameter exploration
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -80,8 +79,8 @@ impl HyperparameterSweep {
         let mut best_index = 0;
         let mut best_score = 0.0;
 
-        for (t_idx, &temp) in self.config.temperature_values.iter().enumerate() {
-            for (c_idx, &cooling) in self.config.cooling_rate_values.iter().enumerate() {
+        for (_t_idx, &temp) in self.config.temperature_values.iter().enumerate() {
+            for (_c_idx, &cooling) in self.config.cooling_rate_values.iter().enumerate() {
                 let eval = self.evaluate_config(temp, cooling);
 
                 if eval.final_score > best_score {

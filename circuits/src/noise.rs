@@ -2,8 +2,7 @@
 //!
 //! This module provides noise models for simulating decoherence and errors.
 
-use crate::{Complex, StateVector, QuantumRegister, Gate, Result, ZERO, ONE, I};
-use nalgebra::DMatrix;
+use crate::{Complex, QuantumRegister, Gate, ZERO};
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 
@@ -335,7 +334,7 @@ fn apply_thermal_relaxation(
 ) {
     // Combined T1 and T2 relaxation
     let gamma_1 = 1.0 - (-gate_time / t1).exp();
-    let gamma_2 = 1.0 - (-gate_time / t2).exp();
+    let _gamma_2 = 1.0 - (-gate_time / t2).exp();
 
     // Apply amplitude damping (T1)
     apply_amplitude_damping(register, qubit, gamma_1);

@@ -207,6 +207,7 @@ impl Default for ScoreCache {
 /// Decomposition cost scorer (for operator mining)
 pub struct DecompositionScorer {
     /// Target gate set size
+    #[allow(dead_code)]
     target_size: usize,
 }
 

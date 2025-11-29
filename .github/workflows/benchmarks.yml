@@ -10,10 +10,9 @@ on:
       mode:
         description: 'Benchmark mode'
         required: true
-        default: 'quick'
+        default: 'full'
         type: choice
         options:
-          - quick
           - full
           - nightly
   schedule:
@@ -25,64 +24,9 @@ env:
   RUST_BACKTRACE: 1
 
 jobs:
-  quick-benchmarks:
-    name: Quick Benchmarks
-    if: github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'quick')
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Cache cargo registry
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-bench-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-bench-
-            ${{ runner.os }}-cargo-
-
-      - name: Build release binary
-        run: |
-          cargo build --release -p qops-cli -p qops-research
-
-      - name: Run quick benchmarks
-        run: |
-          mkdir -p bench_results
-          cargo run --release --bin qops -- benchmark vqe --small --output bench_results
-          cargo run --release --bin qops -- benchmark qaoa --small --output bench_results
-          cargo run --release --bin qops -- benchmark quantum-walk --small --output bench_results
-          cargo run --release --bin qops -- benchmark hypercube --small --output bench_results
-
-      - name: Upload benchmark artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: quick-benchmark-results-${{ github.run_number }}
-          path: bench_results/
-          retention-days: 30
-          if-no-files-found: warn
-
-      - name: Generate benchmark summary
-        run: |
-          echo "## Quick Benchmark Results" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Benchmark | File | Status |" >> $GITHUB_STEP_SUMMARY
-          echo "|-----------|------|--------|" >> $GITHUB_STEP_SUMMARY
-          for f in bench_results/*.json; do
-            if [ -f "$f" ]; then
-              name=$(basename "$f" .json)
-              echo "| $name | $f | ✅ |" >> $GITHUB_STEP_SUMMARY
-            fi
-          done
-
   full-benchmarks:
     name: Full Benchmark Suite
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'full'
+    if: github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'full')
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -109,7 +53,9 @@ jobs:
           cargo build --release -p qops-cli -p qops-research
 
       - name: Run full VQE benchmarks
-        run: cargo run --release --bin qops -- benchmark vqe --output bench_results
+        run: |
+          mkdir -p bench_results
+          cargo run --release --bin qops -- benchmark vqe --output bench_results
 
       - name: Run full VQC benchmarks
         run: cargo run --release --bin qops -- benchmark vqc --output bench_results

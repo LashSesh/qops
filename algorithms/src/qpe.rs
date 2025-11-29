@@ -55,6 +55,7 @@ pub struct QuantumPhaseEstimation {
     /// Number of qubits for eigenstate
     pub state_qubits: usize,
     /// Controlled-U operations (U, U², U⁴, etc. as circuits)
+    #[allow(dead_code)]
     controlled_u_powers: Vec<Circuit>,
     /// Name of the unitary
     pub unitary_name: String,
@@ -142,7 +143,7 @@ impl QuantumPhaseEstimation {
         if state_qubits == 1 {
             // Decompose into controlled rotations
             // U = e^{iα} Rz(β) Ry(γ) Rz(δ)
-            let (alpha, beta, gamma, delta) = Self::decompose_single_qubit(unitary);
+            let (_alpha, beta, gamma, delta) = Self::decompose_single_qubit(unitary);
 
             let target = control + 1;
 
@@ -182,7 +183,7 @@ impl QuantumPhaseEstimation {
         // Remove global phase
         let phase = Complex64::from_polar(1.0, -alpha);
         let v00 = u00 * phase;
-        let v01 = u01 * phase;
+        let _v01 = u01 * phase;
         let v10 = u10 * phase;
         let v11 = u11 * phase;
 
@@ -239,7 +240,7 @@ impl QuantumPhaseEstimation {
     }
 
     /// Run with specified shots
-    pub fn run_with_eigenstate_shots(&self, eigenstate_prep: Circuit, shots: usize) -> QPEResult {
+    pub fn run_with_eigenstate_shots(&self, _eigenstate_prep: Circuit, shots: usize) -> QPEResult {
         let total = self.precision_qubits + self.state_qubits;
         let mut register = QuantumRegister::new(total);
 

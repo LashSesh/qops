@@ -11,7 +11,7 @@
 //!
 //! Reference: Sebastian Klemm, "Holistische Resonanzarchitektur"
 
-use crate::{Signature5D, resonance_5d};
+use crate::Signature5D;
 use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;
 
@@ -456,7 +456,7 @@ impl ChronokratorState {
     }
 
     /// Compute adaptive threshold Θ(t)
-    pub fn compute_threshold(&self, t: f64) -> f64 {
+    pub fn compute_threshold(&self, _t: f64) -> f64 {
         let base = self.config.base_threshold;
 
         // Adapt based on recent history
@@ -639,7 +639,7 @@ impl Ophanim {
     }
 
     /// Compute contribution to Konus
-    pub fn konus_contribution(&self, t: f64, konus_phase: f64) -> f64 {
+    pub fn konus_contribution(&self, _t: f64, konus_phase: f64) -> f64 {
         let phase_diff = self.phase - konus_phase;
         self.lambda * phase_diff.cos()
     }
@@ -749,7 +749,7 @@ impl PfauenthronState {
     }
 
     /// Compute Mandorla convergence S_Mandorla(t) = P_Gabriel · I_Oriphiel
-    pub fn compute_mandorla(&mut self, candidates: &[OperatorCandidate], exkal: &ExkalibrationVector, t: f64) -> MandorlaField {
+    pub fn compute_mandorla(&mut self, candidates: &[OperatorCandidate], exkal: &ExkalibrationVector, _t: f64) -> MandorlaField {
         // Perception vector: average of candidate signatures
         let mut perception = [0.0; 5];
         if !candidates.is_empty() {

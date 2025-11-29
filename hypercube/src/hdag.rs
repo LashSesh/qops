@@ -7,8 +7,8 @@
 //! - Artifact generation and tracking
 
 use crate::coordinates::Coord5D;
-use crate::operators::{Operator5D, OperatorFamily, OperatorType, CompilationOperator, CompilationMode};
-use crate::artifact::{HypercubeArtifact, ArtifactType, ArtifactMetadata};
+use crate::operators::{Operator5D, OperatorType, CompilationOperator, CompilationMode};
+use crate::artifact::{HypercubeArtifact, ArtifactType};
 use crate::error::{HypercubeError, Result};
 use petgraph::graph::{DiGraph, NodeIndex};
 use petgraph::algo::toposort;

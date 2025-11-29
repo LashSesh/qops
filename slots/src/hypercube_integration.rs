@@ -2,14 +2,12 @@
 //!
 //! Integrates slots as artifact outputs from HDAG nodes.
 
-use crate::miner::{MinedSequence, SequenceMiner, MinerConfig, MiningStrategy};
-use crate::lattice::{SlotLattice, LatticeConfig};
-use crate::entropy::{EntropyMapper, EntropyConfig};
+use crate::miner::{MinedSequence, MinerConfig};
+use crate::lattice::LatticeConfig;
 use crate::session::{SlotsSession, SlotsSessionConfig};
-use crate::slot::SlotSymbol;
-use crate::error::{SlotsError, Result};
+use crate::error::Result;
 use qops_hypercube::coordinates::Coord5D;
-use qops_hypercube::artifact::{HypercubeArtifact, ArtifactType, ArtifactMetadata};
+use qops_hypercube::artifact::{HypercubeArtifact, ArtifactType};
 use qops_hypercube::hdag::{HDAG, HDAGNode, HDAGNodeType, HDAGEdge};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -290,6 +288,7 @@ impl Default for HypercubeSlotsMode {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::slot::SlotSymbol;
 
     #[test]
     fn test_slot_artifact_creation() {

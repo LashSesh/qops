@@ -9,7 +9,6 @@
 
 use qops_core::Signature5D;
 use serde::{Deserialize, Serialize};
-use std::f64::consts::PI;
 
 /// 5D coordinate in the Hypercube space
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]

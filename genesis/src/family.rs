@@ -3,7 +3,7 @@
 //! Families group similar operators based on signature proximity.
 
 use crate::artefact::Artefact;
-use qops_core::{Signature5D, resonance_5d};
+use qops_core::Signature5D;
 use serde::{Deserialize, Serialize};
 
 /// An operator family - a group of similar artefacts

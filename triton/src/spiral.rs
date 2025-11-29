@@ -4,7 +4,6 @@ use crate::config::SpiralParams;
 use qops_core::Signature5D;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
-use std::f64::consts::PI;
 
 /// Spiral direction for search
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]

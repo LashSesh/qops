@@ -6,10 +6,9 @@
 //! This module ports the QSO benchmark families to the QOPS framework and
 //! extends them with new benchmarks for the Hypercube/FUQ! capabilities.
 
-use crate::{BenchmarkConfig, Benchmark, BenchmarkResult, BenchmarkSuite};
+use crate::{BenchmarkConfig, Benchmark, BenchmarkSuite};
 use crate::benchmark::Measurement;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 use std::time::Instant;

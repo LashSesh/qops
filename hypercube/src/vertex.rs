@@ -3,7 +3,6 @@
 //! Defines the vertices (nodes) of the Hypercube structure.
 
 use crate::coordinates::Coord5D;
-use crate::operators::OperatorFamily;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 

@@ -6,10 +6,9 @@ use crate::agent::{Agent, AgentConfig, TraversalStrategy};
 use crate::artefact::Artefact;
 use crate::metatron_cube::MetatronCube;
 use crate::family::OperatorFamily;
-use qops_core::{Signature5D, resonance_5d};
+use qops_core::Signature5D;
 use qops_triton::{TritonOptimizer, TritonConfig, OptimizationResult};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use rayon::prelude::*;
 
 /// Mining strategy selection

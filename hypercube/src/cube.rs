@@ -5,7 +5,7 @@
 
 use crate::coordinates::{Coord5D, CoordinateSystem};
 use crate::vertex::{HypercubeVertex, VertexState, VertexType};
-use crate::edge::{HypercubeEdge, EdgeType, EdgeWeight};
+use crate::edge::{HypercubeEdge, EdgeWeight};
 use crate::operators::{Operator5D, OperatorFamily, OperatorType};
 use crate::error::{HypercubeError, Result};
 use serde::{Deserialize, Serialize};
@@ -289,28 +289,27 @@ impl Hypercube {
         }
 
         self.state = HypercubeState::Expanding;
-        let mut new_vertices = 0;
 
-        match self.config.expansion_rule {
+        let new_vertices = match self.config.expansion_rule {
             CubeExpansionRule::Lattice => {
-                new_vertices = self.expand_lattice()?;
+                self.expand_lattice()?
             }
             CubeExpansionRule::ResonanceGuided => {
-                new_vertices = self.expand_resonance_guided()?;
+                self.expand_resonance_guided()?
             }
             CubeExpansionRule::Triton => {
-                new_vertices = self.expand_triton()?;
+                self.expand_triton()?
             }
             CubeExpansionRule::OperatorDriven => {
-                new_vertices = self.expand_operator_driven()?;
+                self.expand_operator_driven()?
             }
             CubeExpansionRule::Random => {
-                new_vertices = self.expand_random()?;
+                self.expand_random()?
             }
             CubeExpansionRule::HybridTriton => {
-                new_vertices = self.expand_hybrid_triton()?;
+                self.expand_hybrid_triton()?
             }
-        }
+        };
 
         self.expansion_iteration += 1;
         self.stats.expansion_steps += 1;
@@ -569,7 +568,7 @@ impl Hypercube {
             }
 
             // Add vertices with mutable access
-            for (new_vertex, weight, op_type) in vertices_to_add {
+            for (new_vertex, _weight, op_type) in vertices_to_add {
                 let to_id = self.add_vertex(new_vertex);
                 let edge = HypercubeEdge::operator(&vid, &to_id, op_type, 0.1);
                 self.add_edge(edge);
