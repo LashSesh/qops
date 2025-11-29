@@ -745,3 +745,307 @@ export async function runHypercubeSlotsMode(
 export async function getSlotsConfigOptions(): Promise<SlotsConfigDto> {
   return invoke('get_slots_config_options');
 }
+
+// ============================================================================
+// Holistic Mining Types
+// ============================================================================
+
+export type GenesisStage = 'discovery' | 'kosmokrator' | 'chronokrator' | 'pfauenthron' | 'finalized';
+
+export interface KosmokratorConfigDto {
+  kappa_threshold: number;
+  stability_epsilon: number;
+  telescope_enabled: boolean;
+  history_window: number;
+}
+
+export interface ChronokratorConfigDto {
+  num_channels: number;
+  base_threshold: number;
+  exkalibration_enabled: boolean;
+  spike_detection: boolean;
+}
+
+export interface PfauenthronConfigDto {
+  mandorla_threshold: number;
+  ophanim_count: number;
+  monolith_enabled: boolean;
+}
+
+export interface HolisticMiningConfigDto {
+  kosmokrator: KosmokratorConfigDto;
+  chronokrator: ChronokratorConfigDto;
+  pfauenthron: PfauenthronConfigDto;
+  num_agents: number;
+  steps_per_agent: number;
+  use_adaptive_triton: boolean;
+  preset: string;
+}
+
+export interface FinalizedFamilyDto {
+  name: string;
+  member_count: number;
+  avg_resonance: number;
+  characteristics: {
+    is_high_quality: boolean;
+    is_stable: boolean;
+    is_efficient: boolean;
+  };
+  finalization_time: string;
+}
+
+export interface MonolithDto {
+  coherence: number;
+  family_count: number;
+  families: FinalizedFamilyDto[];
+  finalized: boolean;
+  creation_time: string;
+}
+
+export interface StageMetricsDto {
+  input_count: number;
+  output_count: number;
+  avg_resonance: number;
+  duration_ms: number;
+}
+
+export interface StageLogDto {
+  stage: GenesisStage;
+  message: string;
+  timestamp: string;
+  metrics: StageMetricsDto | null;
+}
+
+export interface HolisticMiningResultDto {
+  stage: GenesisStage;
+  candidates_discovered: number;
+  candidates_after_kosmokrator: number;
+  candidates_after_chronokrator: number;
+  finalized_families: FinalizedFamilyDto[];
+  best_resonance: number;
+  matrix_outputs: number;
+  monolith: MonolithDto | null;
+  duration_ms: number;
+  stage_logs: StageLogDto[];
+}
+
+export interface TrajectoryPointDto {
+  iteration: number;
+  score: number;
+  layer: number;
+  temperature: number;
+  radius: number;
+}
+
+export interface TritonAdaptiveResultDto {
+  best_score: number;
+  iterations: number;
+  layers_explored: number;
+  converged: boolean;
+  trajectory: TrajectoryPointDto[];
+}
+
+export interface HolisticPresetDto {
+  name: string;
+  config: HolisticMiningConfigDto;
+}
+
+// ============================================================================
+// Holistic Mining Commands
+// ============================================================================
+
+export async function runHolisticMining(
+  config: HolisticMiningConfigDto
+): Promise<HolisticMiningResultDto> {
+  return invoke('run_holistic_mining', { config });
+}
+
+export async function runKosmokratorStage(
+  candidates: number,
+  config: KosmokratorConfigDto
+): Promise<unknown> {
+  return invoke('run_kosmokrator_stage', { candidates, config });
+}
+
+export async function runChronokratorStage(
+  candidates: number,
+  config: ChronokratorConfigDto
+): Promise<unknown> {
+  return invoke('run_chronokrator_stage', { candidates, config });
+}
+
+export async function runPfauenthronStage(
+  candidates: number,
+  config: PfauenthronConfigDto
+): Promise<unknown> {
+  return invoke('run_pfauenthron_stage', { candidates, config });
+}
+
+export async function runAdaptiveTriton(
+  iterations: number,
+  targetResonance: number
+): Promise<TritonAdaptiveResultDto> {
+  return invoke('run_adaptive_triton', { iterations, targetResonance });
+}
+
+export async function getHolisticPresets(): Promise<HolisticPresetDto[]> {
+  return invoke('get_holistic_presets');
+}
+
+export async function exportHolisticResults(
+  result: HolisticMiningResultDto,
+  format: string,
+  path: string | null
+): Promise<string> {
+  return invoke('export_holistic_results', { result, format, path });
+}
+
+// ============================================================================
+// Kernel Types (Mining & Materialization)
+// ============================================================================
+
+export type SearchStrategyType = 'greedy' | 'stochastic' | 'beam' | 'evolutionary' | 'triton' | 'hybrid';
+
+export interface SearchStrategyDto {
+  type: SearchStrategyType;
+  temperature?: number;
+  width?: number;
+  population_size?: number;
+  mutation_rate?: number;
+}
+
+export interface KernelMiningConfigDto {
+  max_iterations: number;
+  target_resonance: number;
+  max_candidates: number;
+  exploration_rate: number;
+  strategy: SearchStrategyDto;
+  convergence_epsilon: number;
+}
+
+export interface BlueprintCandidateDto {
+  id: string;
+  name: string;
+  signature: SignatureDto;
+  resonance_score: number;
+  quality_level: string;
+}
+
+export interface KernelMiningResultDto {
+  best_resonance: number;
+  iterations: number;
+  converged: boolean;
+  candidates: BlueprintCandidateDto[];
+  total_candidates_explored: number;
+  stagnation_count: number;
+  duration_ms: number;
+}
+
+export type ArtefactTypeDto = 'code' | 'configuration' | 'document' | 'data' | 'operator' | 'circuit' | 'generic';
+
+export interface MaterializationConfigDto {
+  artefact_type: ArtefactTypeDto;
+  write_files: boolean;
+  record_in_ledger: boolean;
+  output_format: string;
+}
+
+export interface ArtefactOutputDto {
+  id: string;
+  blueprint_id: string;
+  artefact_type: string;
+  content: unknown;
+  final_resonance: number;
+  created_at: string;
+}
+
+export interface MaterializationResultDto {
+  success: boolean;
+  artefact: ArtefactOutputDto;
+  ledger_entry_id: string | null;
+  warnings: string[];
+}
+
+export interface LedgerEntryDto {
+  id: string;
+  blueprint_id: string;
+  artefact_id: string;
+  timestamp: string;
+  resonance_score: number;
+  hash: string;
+}
+
+export interface LedgerStatsDto {
+  total_entries: number;
+  avg_resonance: number;
+  latest_entry: LedgerEntryDto | null;
+  integrity_verified: boolean;
+}
+
+export interface KernelInfoDto {
+  version: string;
+  name: string;
+  dimensions: number;
+  available_strategies: string[];
+  artefact_types: string[];
+  resonance_models: string[];
+}
+
+export interface KernelMiningPresetDto {
+  name: string;
+  config: KernelMiningConfigDto;
+}
+
+// ============================================================================
+// Kernel Commands
+// ============================================================================
+
+export async function runKernelMining(
+  seedPsi: number,
+  seedRho: number,
+  seedOmega: number,
+  seedChi: number,
+  seedEta: number,
+  config: KernelMiningConfigDto
+): Promise<KernelMiningResultDto> {
+  return invoke('run_kernel_mining', {
+    seedPsi,
+    seedRho,
+    seedOmega,
+    seedChi,
+    seedEta,
+    config,
+  });
+}
+
+export async function materializeBlueprint(
+  blueprintId: string,
+  blueprintPsi: number,
+  blueprintRho: number,
+  blueprintOmega: number,
+  blueprintChi: number,
+  blueprintEta: number,
+  config: MaterializationConfigDto
+): Promise<MaterializationResultDto> {
+  return invoke('materialize_blueprint', {
+    blueprintId,
+    blueprintPsi,
+    blueprintRho,
+    blueprintOmega,
+    blueprintChi,
+    blueprintEta,
+    config,
+  });
+}
+
+export async function getKernelInfo(): Promise<KernelInfoDto> {
+  return invoke('get_kernel_info');
+}
+
+export async function getLedgerStats(): Promise<LedgerStatsDto> {
+  return invoke('get_ledger_stats');
+}
+
+export async function getKernelMiningPresets(): Promise<KernelMiningPresetDto[]> {
+  return invoke('get_mining_presets');
+}

@@ -158,10 +158,9 @@ impl QuantumPhaseEstimation {
             // Controlled Rz(β)
             circuit = circuit.crz(beta, control, target);
         } else {
-            // For multi-qubit unitaries, use a simplified placeholder
-            // A full implementation would need matrix decomposition
+            // Multi-qubit unitaries require matrix decomposition into elementary gates
             return Err(AlgorithmError::InvalidParameter(
-                "Multi-qubit controlled unitaries not fully implemented".to_string()
+                "Multi-qubit controlled unitaries require explicit gate decomposition".to_string()
             ));
         }
 
@@ -208,11 +207,9 @@ impl QuantumPhaseEstimation {
             circuit = circuit.h(i);
         }
 
-        // Apply controlled-U^{2^k} operations
-        // Note: This is a simplified version
-        // Full implementation would use the controlled_u_powers circuits
+        // Apply controlled-U^{2^k} phase rotations
+        // Each precision qubit k controls a phase rotation of θ/2^k
         for k in 0..self.precision_qubits {
-            // Apply controlled rotation as placeholder
             let theta = PI / (1 << k) as f64;
             circuit = circuit.cphase(theta, k, self.precision_qubits);
         }

@@ -31,9 +31,15 @@ impl MetatronHamiltonian {
             }
         }
 
-        // Placeholder for eigendecomposition
-        let eigenvalues = vec![0.0; n];
-        let eigenvectors = DMatrix::identity(n, n);
+        // Compute eigendecomposition via real symmetric eigensolver
+        // (Hamiltonian is Hermitian with real entries from Laplacian)
+        let real_matrix: DMatrix<f64> = DMatrix::from_fn(n, n, |i, j| matrix[(i, j)].re);
+        let eigen = real_matrix.symmetric_eigen();
+
+        let eigenvalues = eigen.eigenvalues.iter().copied().collect();
+        let eigenvectors = DMatrix::from_fn(n, n, |i, j| {
+            Complex64::new(eigen.eigenvectors[(i, j)], 0.0)
+        });
 
         Self {
             matrix,

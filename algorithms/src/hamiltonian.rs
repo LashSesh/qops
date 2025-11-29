@@ -6,9 +6,7 @@
 //! Given H and t, compute U(t) = exp(-iHt)
 //!
 //! ## Methods
-//! - Trotter-Suzuki decomposition
-//! - Quantum signal processing
-//! - Linear combination of unitaries (LCU)
+//! - Trotter-Suzuki decomposition (first, second, and fourth order)
 
 use qops_circuits::{Circuit, QuantumRegister, Complex};
 use crate::{AlgorithmError, Result, vqe::PauliSum};
@@ -194,12 +192,8 @@ pub struct HamiltonianSimulation {
 /// Simulation method
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum SimulationMethod {
-    /// Trotter-Suzuki decomposition
+    /// Trotter-Suzuki decomposition (first, second, or fourth order)
     Trotter(TrotterOrder),
-    /// Quantum signal processing (placeholder)
-    QSP,
-    /// Linear combination of unitaries (placeholder)
-    LCU,
 }
 
 impl HamiltonianSimulation {
@@ -212,7 +206,7 @@ impl HamiltonianSimulation {
         Self::new(hamiltonian, SimulationMethod::Trotter(order))
     }
 
-    /// Simulate time evolution
+    /// Simulate time evolution using the configured method
     pub fn evolve(&self, initial_state: &mut QuantumRegister, time: f64, steps: usize) -> Result<()> {
         match self.method {
             SimulationMethod::Trotter(order) => {
@@ -224,14 +218,6 @@ impl HamiltonianSimulation {
                 let circuit = trotter.build_circuit(time);
                 initial_state.apply_circuit(&circuit)
                     .map_err(|e| AlgorithmError::CircuitError(e.to_string()))
-            }
-            SimulationMethod::QSP => {
-                // Quantum Signal Processing - not implemented
-                Err(AlgorithmError::InvalidParameter("QSP not yet implemented".to_string()))
-            }
-            SimulationMethod::LCU => {
-                // Linear Combination of Unitaries - not implemented
-                Err(AlgorithmError::InvalidParameter("LCU not yet implemented".to_string()))
             }
         }
     }
