@@ -48,7 +48,7 @@ pub fn compile_hypercube(
     iterations: usize,
     use_triton: bool,
 ) -> Result<CompilationResultDto, String> {
-    let seed = Coord5D::new(seed_psi, seed_rho, seed_omega, seed_chi, seed_eta);
+    let _seed = Coord5D::new(seed_psi, seed_rho, seed_omega, seed_chi, seed_eta);
 
     let expansion_rule = if use_triton {
         CubeExpansionRule::Triton
@@ -87,7 +87,7 @@ pub fn compile_hypercube(
 /// Expand a hypercube step by step
 #[tauri::command]
 pub fn expand_cube_step(
-    current_vertices: usize,
+    _current_vertices: usize,
     expansion_rule: String,
     iterations: usize,
 ) -> Result<HypercubeStatsDto, String> {

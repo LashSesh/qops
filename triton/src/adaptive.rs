@@ -585,6 +585,11 @@ impl SpiralLayerMemory {
     pub fn convergence_trend(&self) -> Vec<f64> {
         self.layer_stats.iter().map(|s| s.max_score).collect()
     }
+
+    /// Get number of layers visited (layers with recorded data)
+    pub fn layers_visited(&self) -> usize {
+        self.layer_bests.iter().filter(|opt| opt.is_some()).count()
+    }
 }
 
 // ============================================================================
@@ -1160,6 +1165,29 @@ mod tests {
         }
 
         assert!(stabilizer.is_converged());
+    }
+
+    #[test]
+    fn test_spiral_layer_memory_layers_visited() {
+        use qops_core::Signature5D;
+        
+        let mut memory = SpiralLayerMemory::new(5);
+        
+        // Initially no layers visited
+        assert_eq!(memory.layers_visited(), 0);
+        
+        // Record in layer 0
+        let sig = Signature5D::new(0.5, 0.5, 0.5, 0.5, 0.5);
+        memory.record(0, &sig, 0.8, 0);
+        assert_eq!(memory.layers_visited(), 1);
+        
+        // Record in layer 2 (skipping layer 1)
+        memory.record(2, &sig, 0.9, 1);
+        assert_eq!(memory.layers_visited(), 2);
+        
+        // Recording again in the same layer shouldn't increase count
+        memory.record(0, &sig, 0.85, 2);
+        assert_eq!(memory.layers_visited(), 2);
     }
 
     #[test]
