@@ -205,12 +205,12 @@ pub async fn run_qaoa(
     }
 
     let qaoa = QAOA::max_cut(edges, layers);
-    let result = qaoa.run_with_shots(shots);
+    let result = qaoa.run();
 
     Ok(QaoaResultDto {
         best_solution: result.best_solution,
         best_cost: result.best_cost,
-        approximation_ratio: result.approximation_ratio,
+        approximation_ratio: result.approximation_ratio.unwrap_or(0.0),
         solution_counts: result.solution_counts,
     })
 }

@@ -3125,6 +3125,7 @@ dependencies = [
  "qops-research",
  "qops-seraphic",
  "qops-slots",
+ "qops-triton",
  "serde",
  "serde_json",
  "tauri",

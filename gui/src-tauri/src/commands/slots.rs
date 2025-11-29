@@ -36,17 +36,17 @@ fn mined_sequence_to_dto(seq: &qops_slots::MinedSequence) -> MinedSequenceDto {
         values: seq.values.clone(),
         resonance: seq.resonance,
         coord5d: seq.coord5d,
-        depth: seq.depth,
+        depth: seq.found_at_step,
     }
 }
 
 fn parse_entropy_distribution(name: &str) -> EntropyDistribution {
     match name {
         "uniform" => EntropyDistribution::Uniform,
-        "normal" => EntropyDistribution::Normal { mean: 0.5, std_dev: 0.2 },
-        "exponential" => EntropyDistribution::Exponential { lambda: 2.0 },
-        "beta" => EntropyDistribution::Beta { alpha: 2.0, beta: 5.0 },
-        "bimodal" => EntropyDistribution::Bimodal { peak1: 0.3, peak2: 0.8 },
+        "normal" => EntropyDistribution::Normal,
+        "exponential" => EntropyDistribution::Exponential,
+        "beta" => EntropyDistribution::Beta,
+        "bimodal" => EntropyDistribution::Bimodal,
         "resonance" => EntropyDistribution::ResonanceOptimized,
         _ => EntropyDistribution::Uniform,
     }
@@ -128,7 +128,7 @@ pub fn slots_mine_sequence(
         depth,
         strategy: parse_mining_strategy(&strategy),
         target_resonance,
-        beam_width: beam_width.unwrap_or(10),
+        keep_top: beam_width.unwrap_or(10),
         ..Default::default()
     };
 

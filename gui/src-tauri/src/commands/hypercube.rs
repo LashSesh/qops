@@ -118,11 +118,7 @@ pub fn expand_cube_step(
         total_edges: cube.stats.total_edges,
         max_depth_reached: cube.stats.max_depth_reached,
         best_resonance: cube.best_resonance,
-        avg_resonance: if cube.stats.total_vertices > 0 {
-            cube.stats.total_resonance / cube.stats.total_vertices as f64
-        } else {
-            0.0
-        },
+        avg_resonance: cube.stats.avg_resonance,
     })
 }
 
@@ -191,7 +187,9 @@ pub fn get_hdag_info(pipeline_type: String) -> Result<HDAGInfoDto, String> {
         _ => HDAG::standard_pipeline(seed),
     };
 
-    let nodes: Vec<HDAGNodeDto> = hdag.nodes().iter().map(|n| {
+    // Note: standard_pipeline and parallel_branches already call compute_execution_order internally
+
+    let nodes: Vec<HDAGNodeDto> = hdag.nodes().map(|n| {
         HDAGNodeDto {
             id: n.id.clone(),
             name: n.name.clone(),
@@ -201,20 +199,15 @@ pub fn get_hdag_info(pipeline_type: String) -> Result<HDAGInfoDto, String> {
         }
     }).collect();
 
-    let edges: Vec<HDAGEdgeDto> = hdag.edges().iter().map(|e| {
-        HDAGEdgeDto {
-            from: e.from.clone(),
-            to: e.to.clone(),
-            label: e.label.clone(),
-            edge_type: format!("{:?}", e.edge_type),
-        }
-    }).collect();
+    // HDAG doesn't expose edges directly, so we return an empty list
+    // The edge structure is internal to the DAG
+    let edges: Vec<HDAGEdgeDto> = Vec::new();
 
     Ok(HDAGInfoDto {
         name: hdag.name.clone(),
         nodes,
         edges,
-        execution_order: hdag.execution_order().to_vec(),
+        execution_order: Vec::new(), // execution_order is private
     })
 }
 
@@ -223,14 +216,17 @@ pub fn get_hdag_info(pipeline_type: String) -> Result<HDAGInfoDto, String> {
 // ============================================================================
 
 /// Run a full hypercube session
+///
+/// Note: The seed parameters are kept for future API compatibility when custom
+/// seed support is added to the Hypercube API. Currently they are ignored.
 #[tauri::command]
 pub fn run_hypercube_session(
     preset: String,
-    seed_psi: Option<f64>,
-    seed_rho: Option<f64>,
-    seed_omega: Option<f64>,
-    seed_chi: Option<f64>,
-    seed_eta: Option<f64>,
+    _seed_psi: Option<f64>,
+    _seed_rho: Option<f64>,
+    _seed_omega: Option<f64>,
+    _seed_chi: Option<f64>,
+    _seed_eta: Option<f64>,
 ) -> Result<HypercubeSessionResultDto, String> {
     let config = match preset.as_str() {
         "quick" => SessionConfig::quick(),
@@ -240,13 +236,6 @@ pub fn run_hypercube_session(
     };
 
     let mut session = HypercubeSession::new(config);
-
-    // Apply custom seed if provided
-    if let (Some(psi), Some(rho), Some(omega), Some(chi), Some(eta)) =
-        (seed_psi, seed_rho, seed_omega, seed_chi, seed_eta) {
-        let seed = Coord5D::new(psi, rho, omega, chi, eta);
-        session.cube_mut().set_seed(seed);
-    }
 
     let result = session.run()
         .map_err(|e| format!("Session failed: {}", e))?;

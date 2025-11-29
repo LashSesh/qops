@@ -32,6 +32,7 @@ qops-seraphic = { path = "../../seraphic" }
 qops-adapters = { path = "../../adapters" }
 qops-hypercube = { path = "../../hypercube" }
 qops-slots = { path = "../../slots" }
+qops-triton = { path = "../../triton" }
 
 # Serialization
 serde = { version = "1.0", features = ["derive"] }

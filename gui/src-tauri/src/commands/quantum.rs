@@ -8,7 +8,7 @@ use qops_quantum::{MetatronGraph, MetatronHamiltonian, QuantumState};
 use qops_quantum::quantum_walk::ContinuousQuantumWalk;
 use qops_quantum::vqa::VQE;
 use qops_quantum::topology::{Cube13Engine, Cube13NodeType};
-use qops_core::Signature5D;
+use qops_core::{Signature5D, ResonanceTopology};
 
 /// Cube-13 topology metrics DTO
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -85,7 +85,7 @@ pub async fn get_cube13_info() -> Result<TopologyInfoDto> {
 
     Ok(TopologyInfoDto {
         node_count: 13,
-        edge_count: graph.edges().len(),
+        edge_count: graph.edge_count(),
         topology_type: "Metatron Cube-13".to_string(),
     })
 }
