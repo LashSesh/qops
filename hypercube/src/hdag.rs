@@ -249,6 +249,10 @@ impl Default for HDAGEdge {
 }
 
 /// The Hierarchical Directed Acyclic Graph
+///
+/// Note: The `operators` field contains `Box<dyn Operator5D>` which cannot be cloned.
+/// When cloning this struct, the operators HashMap will be empty. The HDAG can still
+/// execute using the built-in operator application logic based on `operator_type`.
 pub struct HDAG {
     /// Unique identifier
     pub id: String,

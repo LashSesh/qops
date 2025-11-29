@@ -1,6 +1,11 @@
 //! Holistic Resonance Architecture Tauri commands (Stubbed)
 //!
 //! Provides stub commands until full implementation is fixed.
+//!
+//! TODO: Replace this stub with the actual implementation once the
+//! HolisticMiningSession API is aligned with the expected interface.
+//! The full implementation is in holistic.rs (currently disabled).
+//! See: gui/src-tauri/src/commands/holistic.rs for the intended implementation.
 
 use super::*;
 use crate::error::Result;

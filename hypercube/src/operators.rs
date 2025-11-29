@@ -615,6 +615,10 @@ impl Default for CompilationOperator {
 }
 
 /// A family of operators that can be composed
+///
+/// Note: The `operators` field contains `Box<dyn Operator5D>` which cannot be cloned.
+/// When cloning this struct, the operators Vec will be empty. Use `operator_sequence`
+/// for serialization/reconstruction of the operator chain.
 #[derive(Serialize, Deserialize)]
 pub struct OperatorFamily {
     /// Family name
