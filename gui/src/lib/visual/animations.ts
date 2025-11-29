@@ -94,8 +94,12 @@ export function tween(
   onComplete?: () => void
 ): () => void {
   const startTime = performance.now();
+  let cancelled = false;
+  let frameId: number | null = null;
 
   function update() {
+    if (cancelled) return;
+
     const elapsed = performance.now() - startTime;
     const progress = Math.min(1, elapsed / duration);
     const easedProgress = easingFn(progress);
@@ -104,16 +108,19 @@ export function tween(
     onUpdate(value);
 
     if (progress < 1) {
-      requestAnimationFrame(update);
+      frameId = requestAnimationFrame(update);
     } else {
       onComplete?.();
     }
   }
 
-  requestAnimationFrame(update);
+  frameId = requestAnimationFrame(update);
 
   return () => {
-    // Cancel by setting a flag (simplified)
+    cancelled = true;
+    if (frameId !== null) {
+      cancelAnimationFrame(frameId);
+    }
   };
 }
 
@@ -221,11 +228,7 @@ export function createReelSpin(
 /**
  * Create jackpot flash animation
  */
-export function createJackpotFlash(duration: number = 3000): (elapsed: number) => {
-  intensity: number;
-  scale: number;
-  rotation: number;
-} {
+export function createJackpotFlash(duration: number = 3000): (elapsed: number) => { intensity: number; scale: number; rotation: number } {
   return (elapsed: number) => {
     const progress = Math.min(1, elapsed / duration);
 

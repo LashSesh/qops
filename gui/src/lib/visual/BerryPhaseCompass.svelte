@@ -34,15 +34,16 @@
   $: completedCycles = Math.floor(displayPhase / (2 * Math.PI));
   $: isNear2Pi = normalizedPhase > 0.95 * 2 * Math.PI || normalizedPhase < 0.05 * 2 * Math.PI;
 
-  // Check for 2π crossing
-  let lastPhase = 0;
-  $: {
-    const crossedUp = lastPhase < 2 * Math.PI && displayPhase >= 2 * Math.PI;
-    const crossedDown = lastPhase >= 0 && displayPhase < 0;
+  // Track phase crossings using a separate variable to avoid reactive loops
+  let lastCheckedPhase = 0;
+
+  function checkPhaseCrossing(currentPhase: number) {
+    const crossedUp = lastCheckedPhase < 2 * Math.PI && currentPhase >= 2 * Math.PI;
+    const crossedDown = lastCheckedPhase >= 0 && currentPhase < 0;
     if (crossedUp || crossedDown) {
       triggerGlow();
     }
-    lastPhase = displayPhase;
+    lastCheckedPhase = currentPhase;
   }
 
   function triggerGlow() {
@@ -57,6 +58,7 @@
   $: if (animated) {
     const diff = phase - displayPhase;
     displayPhase += diff * 0.1;
+    checkPhaseCrossing(displayPhase);
 
     // Track history
     if (showHistory && Math.abs(diff) > 0.01) {

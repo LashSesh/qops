@@ -39,14 +39,27 @@
 
   $: resonantPoints = data.filter(d => d.isResonant);
 
-  // Detect convergence (stable last 10%)
-  $: isConverged = data.length > 10 && (() => {
-    const lastN = data.slice(-Math.ceil(data.length * 0.1));
+  // Memoized convergence detection (only recompute when data length changes significantly)
+  let lastDataLength = 0;
+  let cachedConverged = false;
+
+  function computeConvergence(dataArray: typeof data): boolean {
+    if (dataArray.length <= 10) return false;
+    const lastN = dataArray.slice(-Math.ceil(dataArray.length * 0.1));
     const avg = lastN.reduce((s, d) => s + d.value, 0) / lastN.length;
     const variance = lastN.reduce((s, d) => s + Math.pow(d.value - avg, 2), 0) / lastN.length;
     return variance < 0.001;
-  })();
+  }
 
+  // Only recompute every 10 data points to reduce computation
+  $: {
+    if (Math.abs(data.length - lastDataLength) >= 10 || data.length <= 10) {
+      cachedConverged = computeConvergence(data);
+      lastDataLength = data.length;
+    }
+  }
+
+  $: isConverged = cachedConverged;
   $: convergencePoint = isConverged ? data[data.length - 1]?.value : null;
 </script>
 

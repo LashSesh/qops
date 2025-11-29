@@ -72,6 +72,9 @@
       let newY = p.y + p.vy;
 
       // Constrain to shrinking bounds
+      // When particle exceeds maxRadius, place it at the boundary on the opposite side
+      // The *-1 inverts the direction vector (dx/dist) to point outward from center
+      // This creates a "push back" effect where particles are reflected at the boundary
       if (dist > maxRadius) {
         newX = centerX + (dx / dist) * maxRadius * -1;
         newY = centerY + (dy / dist) * maxRadius * -1;

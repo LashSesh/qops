@@ -101,6 +101,7 @@
         {@const x = getOperatorPosition(op.timestamp)}
         {@const y = height / 2 - 16}
         {@const isSelected = selectedIndex === i}
+        {@const opLabel = op.type === 'DK' ? 'Double Kick' : op.type === 'SC' ? 'Swap/Cycle' : op.type === 'PI' ? 'Path Integration' : 'Weight Transform'}
         <g
           transform="translate({x}, {y})"
           class="cursor-pointer"
@@ -108,6 +109,7 @@
           on:keydown={(e) => e.key === 'Enter' && handleOperatorClick(i)}
           role="button"
           tabindex="0"
+          aria-label="{opLabel} operator at timestamp {op.timestamp.toFixed(3)}"
         >
           <!-- Pulse effect for selected -->
           {#if isSelected}

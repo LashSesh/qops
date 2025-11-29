@@ -39,12 +39,17 @@
 
   onMount(() => {
     if (animated) {
-      function animate() {
-        // Add slight fluctuation for visual interest
-        fluctuation = Math.sin(Date.now() / 200) * (1 - displayValue) * 2;
+      let startTime: number | null = null;
+
+      function animate(timestamp: number) {
+        if (startTime === null) startTime = timestamp;
+        const elapsed = timestamp - startTime;
+
+        // Add slight fluctuation for visual interest using elapsed time
+        fluctuation = Math.sin(elapsed / 200) * (1 - displayValue) * 2;
         animationFrame = requestAnimationFrame(animate);
       }
-      animate();
+      animationFrame = requestAnimationFrame(animate);
     }
   });
 
