@@ -81,8 +81,6 @@ pub async fn run_quantum_walk(times: Vec<f64>) -> Result<QuantumWalkResultDto> {
 /// Get Cube-13 graph information
 #[tauri::command]
 pub async fn get_cube13_info() -> Result<TopologyInfoDto> {
-    use qops_core::ResonanceTopology;
-    
     let graph = MetatronGraph::new();
 
     Ok(TopologyInfoDto {

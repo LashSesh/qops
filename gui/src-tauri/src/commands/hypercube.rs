@@ -182,14 +182,12 @@ pub fn hdag_execute(
 pub fn get_hdag_info(pipeline_type: String) -> Result<HDAGInfoDto, String> {
     let seed = Coord5D::center();
 
-    let mut hdag = match pipeline_type.as_str() {
+    let hdag = match pipeline_type.as_str() {
         "parallel" => HDAG::parallel_branches(seed),
         _ => HDAG::standard_pipeline(seed),
     };
 
-    // Compute execution order
-    hdag.compute_execution_order()
-        .map_err(|e| format!("Failed to compute execution order: {}", e))?;
+    // Note: standard_pipeline and parallel_branches already call compute_execution_order internally
 
     let nodes: Vec<HDAGNodeDto> = hdag.nodes().map(|n| {
         HDAGNodeDto {
@@ -218,14 +216,17 @@ pub fn get_hdag_info(pipeline_type: String) -> Result<HDAGInfoDto, String> {
 // ============================================================================
 
 /// Run a full hypercube session
+///
+/// Note: The seed parameters are kept for future API compatibility when custom
+/// seed support is added to the Hypercube API. Currently they are ignored.
 #[tauri::command]
 pub fn run_hypercube_session(
     preset: String,
-    seed_psi: Option<f64>,
-    seed_rho: Option<f64>,
-    seed_omega: Option<f64>,
-    seed_chi: Option<f64>,
-    seed_eta: Option<f64>,
+    _seed_psi: Option<f64>,
+    _seed_rho: Option<f64>,
+    _seed_omega: Option<f64>,
+    _seed_chi: Option<f64>,
+    _seed_eta: Option<f64>,
 ) -> Result<HypercubeSessionResultDto, String> {
     let config = match preset.as_str() {
         "quick" => SessionConfig::quick(),
@@ -235,10 +236,6 @@ pub fn run_hypercube_session(
     };
 
     let mut session = HypercubeSession::new(config);
-
-    // Note: Custom seed is not directly supported by Hypercube API
-    // The session uses config-based initialization
-    let _ = (seed_psi, seed_rho, seed_omega, seed_chi, seed_eta);
 
     let result = session.run()
         .map_err(|e| format!("Session failed: {}", e))?;
