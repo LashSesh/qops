@@ -44,6 +44,10 @@
   let strategies: MiningStrategyDto[] = [];
   let distributions: EntropyDistributionDto[] = [];
 
+  // Helper getters for template access
+  $: slotsSymbols = (slotsInfo?.symbols as Array<{name: string; weight: number; description: string}> | undefined) ?? [];
+  $: slotsFeatures = (slotsInfo?.features as string[] | undefined) ?? [];
+
   onMount(async () => {
     try {
       slotsInfo = await getSlotsInfo();
@@ -385,16 +389,16 @@
           </div>
           <div>
             <span class="text-slate-400">Symbols:</span>
-            <span class="text-white ml-1">{(slotsInfo.symbols as Array<{name: string}>)?.length}</span>
+            <span class="text-white ml-1">{slotsSymbols.length}</span>
           </div>
           <div>
             <span class="text-slate-400">Features:</span>
-            <span class="text-white ml-1">{(slotsInfo.features as string[])?.length}</span>
+            <span class="text-white ml-1">{slotsFeatures.length}</span>
           </div>
         </div>
 
         <div class="mt-3 flex flex-wrap gap-2">
-          {#each (slotsInfo.symbols as Array<{name: string; weight: number; description: string}>) || [] as sym}
+          {#each slotsSymbols as sym}
             <div class="px-2 py-1 bg-surface-700 rounded text-xs" title={sym.description}>
               <span class="text-slate-300">{sym.name}</span>
               <span class="text-slate-500 ml-1">({sym.weight > 0 ? '+' : ''}{sym.weight})</span>

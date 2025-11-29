@@ -274,7 +274,7 @@
               </div>
             </div>
             <div class="text-sm text-slate-400">
-              Best solution: {result.best_solution.map((b: boolean) => b ? '1' : '0').join('')}
+              Best solution: {result.best_solution.map((b) => b ? '1' : '0').join('')}
             </div>
           {/if}
         </div>

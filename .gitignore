@@ -11,6 +11,15 @@ bench_results/
 # Tauri generated files
 gui/src-tauri/gen/
 
+# Node.js
+node_modules/
+gui/node_modules/
+gui/package-lock.json
+
+# SvelteKit build output
+gui/.svelte-kit/
+gui/build/
+
 # IDE
 .idea/
 .vscode/

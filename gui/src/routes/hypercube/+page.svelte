@@ -51,6 +51,10 @@
   let hypercubeInfo: Record<string, unknown> | null = null;
   let presets: Array<{ name: string; description: string; max_depth: number; expansion_rule: string }> = [];
 
+  // Helper getters for template access
+  $: hypercubeOperators = (hypercubeInfo?.operators as string[] | undefined) ?? [];
+  $: hypercubeCoordinates = (hypercubeInfo?.coordinates as string[] | undefined) ?? [];
+
   const expansionRules = ['lattice', 'resonance', 'triton', 'operator', 'random', 'hybrid'];
 
   onMount(async () => {
@@ -417,11 +421,11 @@
           </div>
           <div>
             <span class="text-slate-400">Operators:</span>
-            <span class="text-white ml-1">{(hypercubeInfo.operators as string[])?.join(', ')}</span>
+            <span class="text-white ml-1">{hypercubeOperators.join(', ')}</span>
           </div>
           <div>
             <span class="text-slate-400">Coordinates:</span>
-            <span class="text-white ml-1">{(hypercubeInfo.coordinates as string[])?.join(', ')}</span>
+            <span class="text-white ml-1">{hypercubeCoordinates.join(', ')}</span>
           </div>
           <div>
             <span class="text-slate-400">Version:</span>

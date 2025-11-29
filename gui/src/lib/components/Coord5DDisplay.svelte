@@ -31,6 +31,11 @@
     return 0.4 * coord.psi + 0.3 * coord.rho + 0.3 * coord.omega + 0.05 * coord.chi - 0.05 * coord.eta;
   }
 
+  // Get value for a dimension key
+  function getDimValue(coord: Coord5DDto, key: string): number {
+    return coord[key as keyof Coord5DDto];
+  }
+
   // Get point position for a dimension value
   function getPoint(dimIndex: number, value: number): { x: number; y: number } {
     const angle = dimIndex * angleStep - Math.PI / 2; // Start from top
@@ -113,7 +118,7 @@
 
       <!-- Data points -->
       {#each dimensions as dim, i}
-        {@const value = coordinate[dim.key as keyof Coord5DDto]}
+        {@const value = getDimValue(coordinate, dim.key)}
         {@const point = getPoint(i, Math.max(0, Math.min(1, value)))}
         <circle
           cx={point.x}
@@ -129,7 +134,7 @@
       {#if showLabels}
         {#each dimensions as dim, i}
           {@const labelPos = getLabelPosition(i)}
-          {@const value = coordinate[dim.key as keyof Coord5DDto]}
+          {@const value = getDimValue(coordinate, dim.key)}
           <text
             x={labelPos.x}
             y={labelPos.y}
@@ -171,7 +176,7 @@
   <!-- Dimension breakdown -->
   <div class="mt-2 grid grid-cols-5 gap-1 text-xs">
     {#each dimensions as dim}
-      {@const value = coordinate[dim.key as keyof Coord5DDto]}
+      {@const value = getDimValue(coordinate, dim.key)}
       <div class="text-center">
         <div style="color: {dim.color}">{dim.label}</div>
         <div class="text-white">{value.toFixed(2)}</div>
