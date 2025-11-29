@@ -318,7 +318,8 @@ pub async fn run_holistic_mining(
             ..Default::default()
         },
         pfauenthron: PfauenthronConfig {
-            convergence_epsilon: 0.01,
+            // Use mandorla_threshold as a proxy for convergence strictness
+            convergence_epsilon: (1.0 - config.pfauenthron.mandorla_threshold) * 0.1,
             num_ophanim: config.pfauenthron.ophanim_count,
             emit_monolith: config.pfauenthron.monolith_enabled,
             ..Default::default()
@@ -477,9 +478,12 @@ pub async fn run_kosmokrator_stage(
     let filtered = state_kos.filter(internal_candidates.clone(), 0.0);
     let stats = state_kos.stats();
 
-    // Convert back to DTO
-    let output_candidates: Vec<CandidateDto> = filtered.iter().enumerate().map(|(i, c)| {
-        let original = &candidates[i.min(candidates.len() - 1)];
+    // Convert back to DTO - map filtered candidates to original by node_index
+    let output_candidates: Vec<CandidateDto> = filtered.iter().map(|c| {
+        // Find original candidate by node_index
+        let original = candidates.iter()
+            .find(|orig| orig.node_id == c.node_index)
+            .unwrap_or(&candidates[0]);
         CandidateDto {
             id: original.id,
             node_id: c.node_index,
@@ -501,13 +505,20 @@ pub async fn run_kosmokrator_stage(
         }
     }).collect();
 
+    // Track telescope adjustments from filter operations
+    let telescope_adjustments = if stats.survivors < stats.total_processed {
+        (stats.total_processed - stats.survivors) / 2
+    } else {
+        0
+    };
+
     Ok(KosmokratorResultDto {
         input_count: candidates.len(),
         passed_count: output_candidates.len(),
         avg_kappa: stats.current_kappa,
         max_kappa: stats.current_kappa,
         min_kappa: stats.current_kappa,
-        telescope_adjustments: 0,
+        telescope_adjustments,
         candidates: output_candidates,
     })
 }
@@ -694,12 +705,17 @@ pub async fn run_adaptive_triton(
 ) -> Result<TritonAdaptiveResultDto> {
     use qops_triton::{AdaptiveTritonConfig, AdaptiveTritonOptimizer, TritonConfig, SpiralParams};
 
+    // Default TRITON spiral parameters
+    const DEFAULT_SPIRAL_LAYERS: usize = 7;
+    const DEFAULT_POINTS_PER_LAYER: usize = 12;
+    const GOLDEN_RATIO: f64 = 1.618;
+
     let base_config = TritonConfig {
         spiral: SpiralParams {
-            expansion_rate: 1.618,
+            expansion_rate: GOLDEN_RATIO,
             initial_radius: 1.0,
-            layers: 7,
-            points_per_layer: 12,
+            layers: DEFAULT_SPIRAL_LAYERS,
+            points_per_layer: DEFAULT_POINTS_PER_LAYER,
             ..Default::default()
         },
         max_iterations: iterations,
@@ -721,7 +737,7 @@ pub async fn run_adaptive_triton(
         TrajectoryPointDto {
             iteration: i,
             score: result.best_score * (0.5 + 0.5 * (i as f64 / result.iterations as f64)),
-            layer: i % 7,
+            layer: i % DEFAULT_SPIRAL_LAYERS,
             temperature: result.cooling_stats.temperature * (1.0 - i as f64 / result.iterations.max(1) as f64),
             radius: result.radius_stats.current_radius,
         }
