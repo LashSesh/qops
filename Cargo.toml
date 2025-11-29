@@ -12,6 +12,7 @@ members = [
     "hypercube",
     "slots",
     "cli",
+    "gui/src-tauri",
 ]
 resolver = "2"
 

@@ -47,7 +47,7 @@ pub use slot::{Slot, SlotConfig, SlotState, SlotValue, SlotSymbol};
 pub use lattice::{SlotLattice, LatticeConfig, LatticeNode, LatticeEdge};
 pub use entropy::{EntropyMapper, EntropyConfig, EntropySource, EntropyDistribution};
 pub use generator::{SlotGenerator, GeneratorConfig, GeneratedSlot};
-pub use miner::{SequenceMiner, MinerConfig, MiningResult, MinedSequence};
+pub use miner::{SequenceMiner, MinerConfig, MiningResult, MinedSequence, MiningStrategy};
 pub use topology::{SlotTopology, TopologyType, TopologyMetrics};
 pub use spin::{SlotSpin, SpinState, SpinDynamics};
 pub use session::{SlotsSession, SlotsSessionConfig, SlotsSessionResult};

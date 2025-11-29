@@ -322,8 +322,8 @@ fn run_holistic_mining(agents: usize, steps: usize, triton: bool, preset: &str, 
     println!("{}", "Kosmokrator -> Chronokrator -> Pfauenthron".blue());
     println!("{}\n", "=".repeat(60).dimmed());
 
-    use qops_genesis::{HolisticMiningConfig, HolisticMiningSession};
-    use qops_core::{HolisticConfig, KosmokratorConfig, ChronokratorConfig, PfauenthronConfig};
+    use qops_genesis::{HolisticMiningConfig, HolisticMiningSession, MiningConfig};
+    use qops_core::{KosmokratorConfig, ChronokratorConfig, PfauenthronConfig};
 
     // Build holistic config based on preset
     let (kos_kappa, chrono_channels, pfau_mandorla) = match preset {
@@ -332,36 +332,31 @@ fn run_holistic_mining(agents: usize, steps: usize, triton: bool, preset: &str, 
         _ => (0.7, 4, 0.8), // thorough (default)
     };
 
-    let holistic_config = HolisticConfig {
+    let mining = MiningConfig {
+        num_agents: agents,
+        steps_per_agent: steps,
+        ..Default::default()
+    };
+
+    let config = HolisticMiningConfig {
+        mining,
         kosmokrator: KosmokratorConfig {
             kappa_threshold: kos_kappa,
-            stability_epsilon: 0.05,
-            telescope_enabled: true,
-            history_window: 50,
             ..Default::default()
         },
         chronokrator: ChronokratorConfig {
             num_channels: chrono_channels,
             base_threshold: 0.75,
-            exkalibration_enabled: true,
-            spike_detection: true,
             ..Default::default()
         },
         pfauenthron: PfauenthronConfig {
             mandorla_threshold: pfau_mandorla,
-            ophanim_count: 4,
-            monolith_enabled: true,
+            num_ophanim: 4,
+            emit_monolith: true,
             ..Default::default()
         },
-        ..Default::default()
-    };
-
-    let config = HolisticMiningConfig {
-        holistic: holistic_config,
-        num_agents: agents,
-        steps_per_agent: steps,
-        use_adaptive_triton: triton,
-        export_stage_logs: export,
+        adaptive_triton: triton,
+        log_stages: export,
         ..Default::default()
     };
 

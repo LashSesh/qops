@@ -26,6 +26,15 @@ pub struct FamilyCharacteristicsDto {
     pub is_efficient: bool,
 }
 
+/// Helper function to derive characteristics from OperatorFamily
+fn derive_family_characteristics(avg_resonance: f64, coherence: f64, avg_psi: f64) -> FamilyCharacteristicsDto {
+    FamilyCharacteristicsDto {
+        is_high_quality: avg_resonance >= 0.7,
+        is_stable: coherence >= 0.5,
+        is_efficient: avg_psi >= 0.6,
+    }
+}
+
 /// Extended Genesis result with families and TRITON info
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct ExtendedGenesisResultDto {
@@ -105,15 +114,18 @@ pub async fn run_genesis_mining(
 
     let family_dtos: Vec<FamilyDto> = result.families
         .iter()
-        .map(|f| FamilyDto {
-            name: f.name.clone(),
-            member_count: f.members().len(),
-            avg_resonance: f.avg_resonance(),
-            characteristics: FamilyCharacteristicsDto {
-                is_high_quality: f.characteristics.is_high_quality,
-                is_stable: f.characteristics.is_stable,
-                is_efficient: f.characteristics.is_efficient,
-            },
+        .map(|f| {
+            let avg_res = f.avg_resonance();
+            FamilyDto {
+                name: f.name.clone(),
+                member_count: f.members().len(),
+                avg_resonance: avg_res,
+                characteristics: derive_family_characteristics(
+                    avg_res,
+                    f.characteristics.coherence,
+                    f.characteristics.avg_psi,
+                ),
+            }
         })
         .collect();
 

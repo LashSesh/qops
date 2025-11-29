@@ -333,30 +333,42 @@ impl Hypercube {
 
         let mut count = 0;
         for vid in active_ids {
-            if let Some(vertex) = self.vertices.get(&vid) {
-                let new_neighbors = vertex.generate_neighbors();
+            // Get vertex info first
+            let (neighbor_coords, vertex_coord) = {
+                let vertex = match self.vertices.get(&vid) {
+                    Some(v) => v,
+                    None => continue,
+                };
+                (vertex.generate_neighbors(), vertex.coordinate)
+            };
 
-                for mut neighbor in new_neighbors {
-                    // Check if we already have a vertex at this coordinate
-                    let exists = self.vertices.values().any(|v| {
-                        v.coordinate.distance(&neighbor.coordinate) < 0.01
-                    });
+            // Collect existing coordinates
+            let existing_coords: Vec<Coord5D> = self.vertices.values()
+                .map(|v| v.coordinate)
+                .collect();
 
-                    if !exists && neighbor.coordinate.resonance() >= self.config.resonance_threshold {
-                        let from_id = vid.clone();
-                        neighbor.set_parent(&from_id);
+            // Process each neighbor candidate
+            let mut neighbors_to_add: Vec<(HypercubeVertex, EdgeWeight)> = Vec::new();
+            for mut neighbor in neighbor_coords {
+                // Check if we already have a vertex at this coordinate
+                let exists = existing_coords.iter().any(|v| {
+                    v.distance(&neighbor.coordinate) < 0.01
+                });
 
-                        let weight = EdgeWeight::from_coords(
-                            &vertex.coordinate,
-                            &neighbor.coordinate,
-                        );
-                        let to_id = self.add_vertex(neighbor);
-
-                        let edge = HypercubeEdge::expansion(&from_id, &to_id, weight);
-                        self.add_edge(edge);
-                        count += 1;
-                    }
+                if !exists && neighbor.coordinate.resonance() >= self.config.resonance_threshold {
+                    neighbor.set_parent(&vid);
+                    let weight = EdgeWeight::from_coords(&vertex_coord, &neighbor.coordinate);
+                    neighbors_to_add.push((neighbor, weight));
                 }
+            }
+
+            // Now add them with mutable access
+            for (neighbor, weight) in neighbors_to_add {
+                let from_id = vid.clone();
+                let to_id = self.add_vertex(neighbor);
+                let edge = HypercubeEdge::expansion(&from_id, &to_id, weight);
+                self.add_edge(edge);
+                count += 1;
             }
 
             // Mark vertex as processed
@@ -383,9 +395,13 @@ impl Hypercube {
         let max_expand = 10; // Limit expansions per step
 
         for (vid, _) in active.into_iter().take(max_expand) {
-            if let Some(vertex) = self.vertices.get(&vid) {
+            // Get vertex info first
+            let (neighbor_candidates, vertex_coord) = {
+                let vertex = match self.vertices.get(&vid) {
+                    Some(v) => v,
+                    None => continue,
+                };
                 let new_neighbors = vertex.generate_neighbors();
-
                 // Sort neighbors by resonance potential
                 let mut scored_neighbors: Vec<_> = new_neighbors
                     .into_iter()
@@ -395,27 +411,35 @@ impl Hypercube {
                     })
                     .collect();
                 scored_neighbors.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
+                (scored_neighbors.into_iter().take(3).collect::<Vec<_>>(), vertex.coordinate)
+            };
 
-                for (mut neighbor, res) in scored_neighbors.into_iter().take(3) {
-                    let exists = self.vertices.values().any(|v| {
-                        v.coordinate.distance(&neighbor.coordinate) < 0.01
-                    });
+            // Collect existing coordinates
+            let existing_coords: Vec<Coord5D> = self.vertices.values()
+                .map(|v| v.coordinate)
+                .collect();
 
-                    if !exists && res >= self.config.resonance_threshold {
-                        let from_id = vid.clone();
-                        neighbor.set_parent(&from_id);
+            // Collect neighbors to add
+            let mut neighbors_to_add: Vec<(HypercubeVertex, EdgeWeight)> = Vec::new();
+            for (mut neighbor, res) in neighbor_candidates {
+                let exists = existing_coords.iter().any(|v| {
+                    v.distance(&neighbor.coordinate) < 0.01
+                });
 
-                        let weight = EdgeWeight::from_coords(
-                            &vertex.coordinate,
-                            &neighbor.coordinate,
-                        );
-                        let to_id = self.add_vertex(neighbor);
-
-                        let edge = HypercubeEdge::expansion(&from_id, &to_id, weight);
-                        self.add_edge(edge);
-                        count += 1;
-                    }
+                if !exists && res >= self.config.resonance_threshold {
+                    neighbor.set_parent(&vid);
+                    let weight = EdgeWeight::from_coords(&vertex_coord, &neighbor.coordinate);
+                    neighbors_to_add.push((neighbor, weight));
                 }
+            }
+
+            // Add vertices with mutable access
+            for (neighbor, weight) in neighbors_to_add {
+                let from_id = vid.clone();
+                let to_id = self.add_vertex(neighbor);
+                let edge = HypercubeEdge::expansion(&from_id, &to_id, weight);
+                self.add_edge(edge);
+                count += 1;
             }
 
             if let Some(v) = self.vertices.get_mut(&vid) {
@@ -508,33 +532,49 @@ impl Hypercube {
         let mut count = 0;
 
         for vid in active_ids {
-            if let Some(vertex) = self.vertices.get(&vid) {
-                let coord = vertex.coordinate;
+            // Get vertex info first
+            let (coord, depth) = {
+                let vertex = match self.vertices.get(&vid) {
+                    Some(v) => v,
+                    None => continue,
+                };
+                (vertex.coordinate, vertex.depth)
+            };
 
-                for op in &operators {
-                    let new_coord = op.apply(&coord);
-                    let res = new_coord.resonance();
+            // Collect existing coordinates
+            let existing_coords: Vec<Coord5D> = self.vertices.values()
+                .map(|v| v.coordinate)
+                .collect();
 
-                    let exists = self.vertices.values().any(|v| {
-                        v.coordinate.distance(&new_coord) < 0.05
-                    });
+            // Collect vertices to add
+            let mut vertices_to_add: Vec<(HypercubeVertex, EdgeWeight, OperatorType)> = Vec::new();
 
-                    if !exists && res >= self.config.resonance_threshold {
-                        let mut new_vertex = HypercubeVertex::new(VertexType::Generated, new_coord);
-                        new_vertex.set_parent(&vid);
-                        new_vertex.depth = vertex.depth + 1;
+            for op in &operators {
+                let new_coord = op.apply(&coord);
+                let res = new_coord.resonance();
 
-                        let weight = EdgeWeight::from_coords(&coord, &new_coord)
-                            .with_operator_cost(0.1);
-                        let to_id = self.add_vertex(new_vertex);
+                let exists = existing_coords.iter().any(|v| {
+                    v.distance(&new_coord) < 0.05
+                });
 
-                        let edge = HypercubeEdge::operator(&vid, &to_id, op.operator_type(), 0.1);
-                        self.add_edge(edge);
+                if !exists && res >= self.config.resonance_threshold {
+                    let mut new_vertex = HypercubeVertex::new(VertexType::Generated, new_coord);
+                    new_vertex.set_parent(&vid);
+                    new_vertex.depth = depth + 1;
 
-                        self.stats.operators_applied += 1;
-                        count += 1;
-                    }
+                    let weight = EdgeWeight::from_coords(&coord, &new_coord)
+                        .with_operator_cost(0.1);
+                    vertices_to_add.push((new_vertex, weight, op.operator_type()));
                 }
+            }
+
+            // Add vertices with mutable access
+            for (new_vertex, weight, op_type) in vertices_to_add {
+                let to_id = self.add_vertex(new_vertex);
+                let edge = HypercubeEdge::operator(&vid, &to_id, op_type, 0.1);
+                self.add_edge(edge);
+                self.stats.operators_applied += 1;
+                count += 1;
             }
 
             if let Some(v) = self.vertices.get_mut(&vid) {

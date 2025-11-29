@@ -615,7 +615,11 @@ impl Default for CompilationOperator {
 }
 
 /// A family of operators that can be composed
-#[derive(Debug, Clone, Serialize, Deserialize)]
+///
+/// Note: The `operators` field contains `Box<dyn Operator5D>` which cannot be cloned.
+/// When cloning this struct, the operators Vec will be empty. Use `operator_sequence`
+/// for serialization/reconstruction of the operator chain.
+#[derive(Serialize, Deserialize)]
 pub struct OperatorFamily {
     /// Family name
     pub name: String,
@@ -628,6 +632,30 @@ pub struct OperatorFamily {
     pub operator_sequence: Vec<OperatorType>,
     /// Family metadata
     pub metadata: FamilyMetadata,
+}
+
+impl std::fmt::Debug for OperatorFamily {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("OperatorFamily")
+            .field("name", &self.name)
+            .field("seed", &self.seed)
+            .field("operators_count", &self.operators.len())
+            .field("operator_sequence", &self.operator_sequence)
+            .field("metadata", &self.metadata)
+            .finish()
+    }
+}
+
+impl Clone for OperatorFamily {
+    fn clone(&self) -> Self {
+        Self {
+            name: self.name.clone(),
+            seed: self.seed,
+            operators: Vec::new(), // Operators not cloned
+            operator_sequence: self.operator_sequence.clone(),
+            metadata: self.metadata.clone(),
+        }
+    }
 }
 
 /// Metadata for an operator family

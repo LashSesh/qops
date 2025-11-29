@@ -53,8 +53,10 @@ pub use mining::{MiningSession, MiningConfig, MiningStrategy, MiningResult, Mini
 pub use family::{OperatorFamily, FamilyClusterer, FamilyMetrics, FamilyCharacteristics};
 pub use holistic_mining::{
     HolisticMiningConfig, HolisticMiningSession, HolisticMiningResult,
-    StageLogEntry, StageMetrics, GenesisStage,
+    StageLogEntry, StageMetrics,
 };
+// Re-export GenesisStage from core
+pub use qops_core::GenesisStage;
 pub use reporting::{
     GenesisReporter, ReportFormat, ReportConfig, GenesisReport,
     FamilyReportEntry, PipelineStageSummary, MonolithSummary, ReportStatistics,

@@ -250,6 +250,12 @@ pub struct HolisticMiningResult {
     pub resonance_timeline: Vec<f64>,
     /// Exkalibration vectors
     pub exkalibration_vectors: Vec<ExkalibrationVector>,
+    /// Number of candidates discovered
+    pub candidates_discovered: usize,
+    /// Number of candidates after Kosmokrator filtering
+    pub candidates_after_kosmokrator: usize,
+    /// Number of candidates after Chronokrator expansion
+    pub candidates_after_chronokrator: usize,
 }
 
 // ============================================================================
@@ -270,6 +276,12 @@ pub struct HolisticMiningSession {
     current_step: usize,
     resonance_timeline: Vec<f64>,
     start_time: Option<std::time::Instant>,
+    /// Track candidate count after discovery
+    candidates_discovered: usize,
+    /// Track candidate count after Kosmokrator
+    candidates_after_kosmokrator: usize,
+    /// Track candidate count after Chronokrator
+    candidates_after_chronokrator: usize,
 }
 
 impl HolisticMiningSession {
@@ -305,6 +317,9 @@ impl HolisticMiningSession {
             current_step: 0,
             resonance_timeline: Vec::new(),
             start_time: None,
+            candidates_discovered: 0,
+            candidates_after_kosmokrator: 0,
+            candidates_after_chronokrator: 0,
         }
     }
 
@@ -386,7 +401,7 @@ impl HolisticMiningSession {
                 resonance: artefact.resonance,
                 stability: 0.5,
                 is_mandorla: artefact.is_mandorla(),
-                node_index: artefact.node,
+                node_index: artefact.node.index(),
                 discovered_at: self.current_step as f64,
             });
 
@@ -394,6 +409,9 @@ impl HolisticMiningSession {
         }
 
         self.current_step += self.artefacts.len();
+
+        // Track candidates discovered
+        self.candidates_discovered = self.candidates.len();
 
         self.log_stage_end(GenesisStage::Discovery, stage_start, StageMetrics::Discovery {
             nodes_visited,
@@ -470,6 +488,9 @@ impl HolisticMiningSession {
         self.current_step += 1;
         self.current_stage = GenesisStage::ChronokratorExpansion;
 
+        // Track candidates after Kosmokrator
+        self.candidates_after_kosmokrator = self.candidates.len();
+
         self.log_stage_end(GenesisStage::KosmokratorFilter, stage_start, StageMetrics::Kosmokrator {
             kappa: por.kappa,
             por_passed: por.passed,
@@ -504,6 +525,9 @@ impl HolisticMiningSession {
 
         self.current_step += 1;
         self.current_stage = GenesisStage::PfauenthronCollapse;
+
+        // Track candidates after Chronokrator
+        self.candidates_after_chronokrator = self.candidates.len();
 
         self.log_stage_end(GenesisStage::ChronokratorExpansion, stage_start, StageMetrics::Chronokrator {
             d_total: stats.current_d_total,
@@ -671,6 +695,9 @@ impl HolisticMiningSession {
             duration_ms,
             resonance_timeline: self.resonance_timeline.clone(),
             exkalibration_vectors,
+            candidates_discovered: self.candidates_discovered,
+            candidates_after_kosmokrator: self.candidates_after_kosmokrator,
+            candidates_after_chronokrator: self.candidates_after_chronokrator,
         }
     }
 

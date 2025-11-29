@@ -434,12 +434,20 @@ impl TopologyGaussianBias {
         let mut cumulative = 0.0;
         let threshold = self.rng.gen::<f64>() * total_weight;
 
+        // Find the selected center first, then sample
+        let mut selected_center: Option<[f64; 5]> = None;
         for center in &self.centers {
             cumulative += center.weight * center.score;
             if cumulative >= threshold {
-                // Sample from Gaussian around this center
-                return self.gaussian_sample(&center.center, self.config.sigma);
+                selected_center = Some(center.center);
+                break;
             }
+        }
+
+        if let Some(center) = selected_center {
+            // Sample from Gaussian around this center
+            let sigma = self.config.sigma;
+            return self.gaussian_sample(&center, sigma);
         }
 
         self.random_perturbation(current, radius)
@@ -447,7 +455,7 @@ impl TopologyGaussianBias {
 
     /// Sample from Gaussian distribution
     fn gaussian_sample(&mut self, center: &[f64; 5], sigma: f64) -> Signature5D {
-        let normal = || {
+        let mut normal = || {
             // Box-Muller transform
             let u1: f64 = self.rng.gen();
             let u2: f64 = self.rng.gen();

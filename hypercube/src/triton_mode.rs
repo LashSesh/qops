@@ -157,9 +157,20 @@ impl HypercubeTritonMode {
         let center = state.best_coord;
         let layer = state.current_layer;
         let radius = state.radius;
+        let threshold = cube.config.resonance_threshold;
+        let best_resonance_before = state.best_resonance;
+        let temperature = state.temperature;
 
         let mut new_vertices = 0;
         let mut layer_best_resonance = 0.0;
+
+        // Collect existing vertex positions first
+        let existing_coords: Vec<Coord5D> = cube.vertices.values()
+            .map(|v| v.coordinate)
+            .collect();
+
+        // Collect new vertices to add
+        let mut vertices_to_add: Vec<(Coord5D, f64)> = Vec::new();
 
         // Generate spiral points for this layer
         for i in 0..self.config.points_per_layer {
@@ -174,48 +185,54 @@ impl HypercubeTritonMode {
             let resonance = new_coord.resonance();
 
             // Simulated annealing acceptance
-            let accept = if resonance > state.best_resonance {
+            let accept = if resonance > best_resonance_before {
                 true
             } else {
-                let delta = state.best_resonance - resonance;
-                let prob = (-delta / state.temperature).exp();
+                let delta = best_resonance_before - resonance;
+                let prob = (-delta / temperature).exp();
                 rand::random::<f64>() < prob
             };
 
-            if accept && resonance >= cube.config.resonance_threshold {
+            if accept && resonance >= threshold {
                 // Check if position is new
-                let exists = cube.vertices.values().any(|v| {
-                    v.coordinate.distance(&new_coord) < 0.03
+                let exists = existing_coords.iter().any(|v| {
+                    v.distance(&new_coord) < 0.03
                 });
 
                 if !exists {
-                    let mut vertex = HypercubeVertex::new(VertexType::Generated, new_coord);
-                    vertex.depth = layer + 1;
-
-                    if let Some(best_id) = &cube.best_vertex_id {
-                        vertex.set_parent(best_id);
-                    }
-
-                    let weight = EdgeWeight::from_coords(&center, &new_coord);
-                    let vertex_id = cube.add_vertex(vertex);
-
-                    if let Some(best_id) = &cube.best_vertex_id {
-                        let edge = HypercubeEdge::expansion(best_id, &vertex_id, weight);
-                        cube.add_edge(edge);
-                    }
-
-                    new_vertices += 1;
-
-                    // Update best if improved
-                    if resonance > state.best_resonance {
-                        state.best_resonance = resonance;
-                        state.best_coord = new_coord;
-                    }
+                    vertices_to_add.push((new_coord, resonance));
                 }
             }
 
             if resonance > layer_best_resonance {
                 layer_best_resonance = resonance;
+            }
+        }
+
+        // Now add the vertices with mutable cube access
+        let state = self.state.as_mut().unwrap();
+        for (new_coord, resonance) in vertices_to_add {
+            let mut vertex = HypercubeVertex::new(VertexType::Generated, new_coord);
+            vertex.depth = layer + 1;
+
+            if let Some(best_id) = &cube.best_vertex_id {
+                vertex.set_parent(best_id);
+            }
+
+            let weight = EdgeWeight::from_coords(&center, &new_coord);
+            let vertex_id = cube.add_vertex(vertex);
+
+            if let Some(best_id) = &cube.best_vertex_id.clone() {
+                let edge = HypercubeEdge::expansion(&best_id, &vertex_id, weight);
+                cube.add_edge(edge);
+            }
+
+            new_vertices += 1;
+
+            // Update best if improved
+            if resonance > state.best_resonance {
+                state.best_resonance = resonance;
+                state.best_coord = new_coord;
             }
         }
 
@@ -256,7 +273,7 @@ impl HypercubeTritonMode {
             radius * (angle * freq_offsets[1] + point_offset).sin(),
             radius * (angle * freq_offsets[2]).cos() * 0.8,
             radius * (angle * freq_offsets[3]).sin() * 0.6,
-            radius * (angle * freq_offsets[4]).cos() * 0.4 * (-layer as f64 * 0.1).exp(),
+            radius * (angle * freq_offsets[4]).cos() * 0.4 * (-(layer as f64) * 0.1).exp(),
         )
     }
 

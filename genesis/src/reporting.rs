@@ -211,26 +211,26 @@ impl GenesisReporter {
                 name: f.name.clone(),
                 member_count: f.member_count,
                 avg_resonance: f.avg_resonance,
-                is_high_quality: f.characteristics.is_high_quality,
-                is_stable: f.characteristics.is_stable,
-                is_efficient: f.characteristics.is_efficient,
+                is_high_quality: f.is_high_quality,
+                is_stable: f.is_stable,
+                is_efficient: f.avg_resonance >= 0.6, // Derive from resonance
             })
             .collect();
 
         // Build monolith summary
-        let monolith = self.result.monolith.as_ref().map(|m| MonolithSummary {
-            coherence: m.coherence,
-            family_count: m.family_count,
-            finalized: m.finalized,
+        let monolith = self.result.monoliths.first().map(|m| MonolithSummary {
+            coherence: m.mandorla_score,  // Use mandorla_score as coherence proxy
+            family_count: m.family_ids.len(),
+            finalized: true,  // Assume finalized if present
         });
 
         // Build stage logs
-        let stage_logs: Vec<StageLogSummary> = self.result.stage_logs
+        let stage_logs: Vec<StageLogSummary> = self.result.stage_log
             .iter()
             .map(|log| StageLogSummary {
                 stage: format!("{:?}", log.stage),
-                message: log.message.clone(),
-                timestamp: log.timestamp.to_rfc3339(),
+                message: format!("Stage completed with {} candidates", log.candidates_out),
+                timestamp: format!("step_{}", log.timestamp),
             })
             .collect();
 
@@ -264,7 +264,7 @@ impl GenesisReporter {
             timestamp,
             duration_ms: self.result.duration_ms,
             best_resonance: self.result.best_resonance,
-            matrix_outputs: self.result.matrix_outputs,
+            matrix_outputs: self.result.holistic_stats.total_outputs,
             pipeline_summary,
             families,
             monolith,

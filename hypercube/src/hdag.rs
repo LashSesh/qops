@@ -249,7 +249,10 @@ impl Default for HDAGEdge {
 }
 
 /// The Hierarchical Directed Acyclic Graph
-#[derive(Debug, Clone)]
+///
+/// Note: The `operators` field contains `Box<dyn Operator5D>` which cannot be cloned.
+/// When cloning this struct, the operators HashMap will be empty. The HDAG can still
+/// execute using the built-in operator application logic based on `operator_type`.
 pub struct HDAG {
     /// Unique identifier
     pub id: String,
@@ -259,7 +262,7 @@ pub struct HDAG {
     graph: DiGraph<HDAGNode, HDAGEdge>,
     /// Node ID to index mapping
     node_index_map: HashMap<String, NodeIndex>,
-    /// Operator instances for execution
+    /// Operator instances for execution (not cloneable/debuggable)
     #[allow(dead_code)]
     operators: HashMap<String, Box<dyn Operator5D>>,
     /// Generated artifacts
@@ -268,6 +271,35 @@ pub struct HDAG {
     execution_order: Vec<NodeIndex>,
     /// Current execution position
     current_position: usize,
+}
+
+impl std::fmt::Debug for HDAG {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("HDAG")
+            .field("id", &self.id)
+            .field("name", &self.name)
+            .field("node_count", &self.graph.node_count())
+            .field("edge_count", &self.graph.edge_count())
+            .field("operators_count", &self.operators.len())
+            .field("artifacts_count", &self.artifacts.len())
+            .field("current_position", &self.current_position)
+            .finish()
+    }
+}
+
+impl Clone for HDAG {
+    fn clone(&self) -> Self {
+        Self {
+            id: self.id.clone(),
+            name: self.name.clone(),
+            graph: self.graph.clone(),
+            node_index_map: self.node_index_map.clone(),
+            operators: HashMap::new(), // Operators are not cloned
+            artifacts: self.artifacts.clone(),
+            execution_order: self.execution_order.clone(),
+            current_position: self.current_position,
+        }
+    }
 }
 
 impl HDAG {
