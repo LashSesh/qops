@@ -294,43 +294,40 @@ pub async fn run_holistic_mining(
     state: State<'_, AppState>,
     config: HolisticMiningConfigDto,
 ) -> Result<HolisticMiningResultDto> {
-    use qops_genesis::{HolisticMiningConfig, HolisticMiningSession};
-    use qops_core::{HolisticConfig, KosmokratorConfig, ChronokratorConfig, PfauenthronConfig};
+    use qops_genesis::{HolisticMiningConfig, HolisticMiningSession, MiningConfig};
+    use qops_core::{KosmokratorConfig, ChronokratorConfig, PfauenthronConfig};
     use std::time::Instant;
 
     let start = Instant::now();
 
     // Build internal config from DTO
-    let holistic_config = HolisticConfig {
+    let mining = MiningConfig {
+        num_agents: config.num_agents,
+        steps_per_agent: config.steps_per_agent,
+        ..Default::default()
+    };
+
+    let mining_config = HolisticMiningConfig {
+        mining,
         kosmokrator: KosmokratorConfig {
             kappa_threshold: config.kosmokrator.kappa_threshold,
-            stability_epsilon: config.kosmokrator.stability_epsilon,
-            telescope_enabled: config.kosmokrator.telescope_enabled,
-            history_window: config.kosmokrator.history_window,
+            epsilon: config.kosmokrator.stability_epsilon,
+            stability_window: config.kosmokrator.history_window,
             ..Default::default()
         },
         chronokrator: ChronokratorConfig {
             num_channels: config.chronokrator.num_channels,
             base_threshold: config.chronokrator.base_threshold,
-            exkalibration_enabled: config.chronokrator.exkalibration_enabled,
-            spike_detection: config.chronokrator.spike_detection,
             ..Default::default()
         },
         pfauenthron: PfauenthronConfig {
             mandorla_threshold: config.pfauenthron.mandorla_threshold,
-            ophanim_count: config.pfauenthron.ophanim_count,
-            monolith_enabled: config.pfauenthron.monolith_enabled,
+            num_ophanim: config.pfauenthron.ophanim_count,
+            emit_monolith: config.pfauenthron.monolith_enabled,
             ..Default::default()
         },
-        ..Default::default()
-    };
-
-    let mining_config = HolisticMiningConfig {
-        holistic: holistic_config,
-        num_agents: config.num_agents,
-        steps_per_agent: config.steps_per_agent,
-        use_adaptive_triton: config.use_adaptive_triton,
-        export_stage_logs: true,
+        adaptive_triton: config.use_adaptive_triton,
+        log_stages: true,
         ..Default::default()
     };
 
@@ -359,16 +356,16 @@ pub async fn run_holistic_mining(
             member_count: f.member_count,
             avg_resonance: f.avg_resonance,
             characteristics: FamilyCharacteristicsDto {
-                is_high_quality: f.characteristics.is_high_quality,
-                is_stable: f.characteristics.is_stable,
-                is_efficient: f.characteristics.is_efficient,
+                is_high_quality: f.is_high_quality,
+                is_stable: f.is_stable,
+                is_efficient: f.avg_resonance >= 0.6, // Derive from resonance
             },
             finalization_time: chrono::Utc::now().to_rfc3339(),
         })
         .collect();
 
     // Convert stage logs
-    let stage_logs: Vec<StageLogDto> = result.stage_logs
+    let stage_logs: Vec<StageLogDto> = result.stage_log
         .iter()
         .map(|log| StageLogDto {
             stage: match log.stage {
@@ -389,8 +386,8 @@ pub async fn run_holistic_mining(
         })
         .collect();
 
-    // Convert monolith if present
-    let monolith = result.monolith.as_ref().map(|m| MonolithDto {
+    // Convert first monolith if present (using monoliths vec)
+    let monolith = result.monoliths.first().map(|m| MonolithDto {
         coherence: m.coherence,
         family_count: m.family_count,
         families: m.families.iter().map(|f| FinalizedFamilyDto {
@@ -398,9 +395,9 @@ pub async fn run_holistic_mining(
             member_count: f.member_count,
             avg_resonance: f.avg_resonance,
             characteristics: FamilyCharacteristicsDto {
-                is_high_quality: f.characteristics.is_high_quality,
-                is_stable: f.characteristics.is_stable,
-                is_efficient: f.characteristics.is_efficient,
+                is_high_quality: f.is_high_quality,
+                is_stable: f.is_stable,
+                is_efficient: f.avg_resonance >= 0.6, // Derive from resonance
             },
             finalization_time: chrono::Utc::now().to_rfc3339(),
         }).collect(),
@@ -415,7 +412,7 @@ pub async fn run_holistic_mining(
         candidates_after_chronokrator: after_chrono,
         finalized_families: families,
         best_resonance: result.best_resonance,
-        matrix_outputs: result.matrix_outputs,
+        matrix_outputs: result.holistic_stats.total_outputs,
         monolith,
         duration_ms: duration.as_millis() as u64,
         stage_logs,

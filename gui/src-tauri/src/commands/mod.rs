@@ -4,7 +4,9 @@ pub mod algorithms;
 pub mod calibration;
 pub mod circuits;
 pub mod genesis;
-pub mod holistic;
+// pub mod holistic; // Temporarily disabled - using stub
+pub mod holistic_stub;
+pub use holistic_stub as holistic;
 pub mod hypercube;
 pub mod quantum;
 pub mod research;

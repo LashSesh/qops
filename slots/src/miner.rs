@@ -356,8 +356,9 @@ impl SequenceMiner {
                     // Bias towards candidate's good dimensions
                     for i in 0..5 {
                         if candidate.coord5d[i] > 0.6 {
-                            seq.values[i % seq.values.len()] =
-                                (seq.values[i % seq.values.len()] + candidate.coord5d[i]) / 2.0;
+                            let idx = i % seq.values.len();
+                            let old_val = seq.values[idx];
+                            seq.values[idx] = (old_val + candidate.coord5d[i]) / 2.0;
                         }
                     }
                     seq.resonance = MinedSequence::compute_resonance(&seq.symbols, &seq.values);

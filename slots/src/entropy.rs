@@ -161,10 +161,10 @@ impl EntropyMapper {
             EntropyDistribution::Bimodal => {
                 if self.rng.gen::<f64>() < 0.5 {
                     let normal = Normal::new(0.3, 0.1).unwrap();
-                    normal.sample(&mut self.rng).clamp(0.0, 1.0)
+                    (normal.sample(&mut self.rng) as f64).clamp(0.0, 1.0)
                 } else {
                     let normal = Normal::new(0.7, 0.1).unwrap();
-                    normal.sample(&mut self.rng).clamp(0.0, 1.0)
+                    (normal.sample(&mut self.rng) as f64).clamp(0.0, 1.0)
                 }
             }
             EntropyDistribution::ResonanceOptimized => {
