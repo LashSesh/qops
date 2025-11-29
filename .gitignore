@@ -5,6 +5,9 @@ target/
 genesis-engine/
 qso/
 
+# Benchmark results (generated, not tracked)
+bench_results/
+
 # IDE
 .idea/
 .vscode/

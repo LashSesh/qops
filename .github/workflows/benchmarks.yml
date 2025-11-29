@@ -1,0 +1,272 @@
+name: Benchmarks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Benchmark mode'
+        required: true
+        default: 'quick'
+        type: choice
+        options:
+          - quick
+          - full
+          - nightly
+  schedule:
+    # Run nightly at 2:00 AM UTC
+    - cron: '0 2 * * *'
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  quick-benchmarks:
+    name: Quick Benchmarks
+    if: github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'quick')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-action@stable
+        with:
+          toolchain: stable
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-bench-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-bench-
+            ${{ runner.os }}-cargo-
+
+      - name: Build release binary
+        run: |
+          cargo build --release -p qops-cli -p qops-research
+
+      - name: Run quick benchmarks
+        run: |
+          mkdir -p bench_results
+          cargo run --release --bin qops -- benchmark vqe --small --output bench_results
+          cargo run --release --bin qops -- benchmark qaoa --small --output bench_results
+          cargo run --release --bin qops -- benchmark quantum-walk --small --output bench_results
+          cargo run --release --bin qops -- benchmark hypercube --small --output bench_results
+
+      - name: Upload benchmark artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: quick-benchmark-results-${{ github.run_number }}
+          path: bench_results/
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Generate benchmark summary
+        run: |
+          echo "## Quick Benchmark Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Benchmark | File | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|------|--------|" >> $GITHUB_STEP_SUMMARY
+          for f in bench_results/*.json; do
+            if [ -f "$f" ]; then
+              name=$(basename "$f" .json)
+              echo "| $name | $f | ✅ |" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+
+  full-benchmarks:
+    name: Full Benchmark Suite
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'full'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-action@stable
+        with:
+          toolchain: stable
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-bench-full-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-bench-full-
+            ${{ runner.os }}-cargo-bench-
+            ${{ runner.os }}-cargo-
+
+      - name: Build release binary
+        run: |
+          cargo build --release -p qops-cli -p qops-research
+
+      - name: Run full VQE benchmarks
+        run: cargo run --release --bin qops -- benchmark vqe --output bench_results
+
+      - name: Run full VQC benchmarks
+        run: cargo run --release --bin qops -- benchmark vqc --output bench_results
+
+      - name: Run full QAOA benchmarks
+        run: cargo run --release --bin qops -- benchmark qaoa --output bench_results
+
+      - name: Run full quantum walk benchmarks
+        run: cargo run --release --bin qops -- benchmark quantum-walk --output bench_results
+
+      - name: Run advanced algorithms benchmarks
+        run: cargo run --release --bin qops -- benchmark advanced --output bench_results
+
+      - name: Run integration benchmarks
+        run: cargo run --release --bin qops -- benchmark integration --output bench_results
+
+      - name: Run cross-system benchmarks
+        run: cargo run --release --bin qops -- benchmark cross --output bench_results
+
+      - name: Run hypercube benchmarks
+        run: cargo run --release --bin qops -- benchmark hypercube --output bench_results
+
+      - name: Run mining benchmarks
+        run: cargo run --release --bin qops -- benchmark mining --output bench_results
+
+      - name: Run topology benchmarks
+        run: cargo run --release --bin qops -- benchmark topology --output bench_results
+
+      - name: Run GUI latency benchmarks
+        run: cargo run --release --bin qops -- benchmark gui-latency --output bench_results
+
+      - name: Upload benchmark artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-benchmark-results-${{ github.run_number }}
+          path: bench_results/
+          retention-days: 90
+          if-no-files-found: warn
+
+      - name: Generate benchmark summary
+        run: |
+          echo "## Full Benchmark Suite Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Run ID:** ${{ github.run_number }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Benchmark Files" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Benchmark | File | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|------|--------|" >> $GITHUB_STEP_SUMMARY
+          for f in bench_results/*.json; do
+            if [ -f "$f" ]; then
+              name=$(basename "$f" .json)
+              size=$(ls -lh "$f" | awk '{print $5}')
+              echo "| $name | $f ($size) | ✅ |" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+
+  nightly-benchmarks:
+    name: Nightly Benchmarks
+    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'nightly')
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-action@stable
+        with:
+          toolchain: stable
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-bench-nightly-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-bench-nightly-
+            ${{ runner.os }}-cargo-bench-
+            ${{ runner.os }}-cargo-
+
+      - name: Build release binary
+        run: |
+          cargo build --release -p qops-cli -p qops-research
+
+      - name: Run all benchmarks
+        run: |
+          mkdir -p bench_results
+          cargo run --release --bin qops -- benchmark all --output bench_results
+
+      - name: Fetch previous results
+        id: fetch-prev
+        continue-on-error: true
+        uses: dawidd6/action-download-artifact@v3
+        with:
+          workflow: benchmarks.yml
+          workflow_conclusion: success
+          name: nightly-benchmark-results-*
+          path: prev_results/
+          search_artifacts: true
+          if_no_artifact_found: ignore
+
+      - name: Compare with previous run (regression detection)
+        if: steps.fetch-prev.outcome == 'success'
+        run: |
+          echo "## Nightly Benchmark Regression Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Simple regression detection script
+          for f in bench_results/*.json; do
+            name=$(basename "$f" .json)
+            prev_file="prev_results/$name.json"
+
+            if [ -f "$prev_file" ]; then
+              # Extract total duration from both files
+              curr_duration=$(jq -r '.summary.total_duration_ms // 0' "$f")
+              prev_duration=$(jq -r '.summary.total_duration_ms // 0' "$prev_file")
+
+              if [ "$prev_duration" != "0" ] && [ "$curr_duration" != "0" ]; then
+                change=$(echo "scale=2; ($curr_duration - $prev_duration) / $prev_duration * 100" | bc)
+                
+                if (( $(echo "$change > 20" | bc -l) )); then
+                  echo "| $name | ${prev_duration}ms | ${curr_duration}ms | ⚠️ +${change}% |" >> $GITHUB_STEP_SUMMARY
+                elif (( $(echo "$change < -20" | bc -l) )); then
+                  echo "| $name | ${prev_duration}ms | ${curr_duration}ms | 🎉 ${change}% |" >> $GITHUB_STEP_SUMMARY
+                else
+                  echo "| $name | ${prev_duration}ms | ${curr_duration}ms | ✅ ${change}% |" >> $GITHUB_STEP_SUMMARY
+                fi
+              fi
+            fi
+          done
+
+      - name: Upload benchmark artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-benchmark-results-${{ github.run_number }}
+          path: bench_results/
+          retention-days: 365  # Keep nightly results for 1 year for scientific analysis
+          if-no-files-found: warn
+
+      - name: Generate nightly summary
+        run: |
+          echo "## Nightly Benchmark Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Date:** $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_STEP_SUMMARY
+          echo "**Run ID:** ${{ github.run_number }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "These results are suitable for inclusion in DOI-backed technical reports." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Benchmark Files" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          ls -la bench_results/ >> $GITHUB_STEP_SUMMARY

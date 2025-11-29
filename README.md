@@ -497,6 +497,52 @@ QOPS fuses two systems:
    - Adaptive temperature annealing
    - Topology-aware exploration
 
+## Benchmarks & Scientific Use
+
+QOPS includes a comprehensive benchmark suite for evaluating quantum algorithms, hypercube operations, and system performance.
+
+### Quick Start
+
+```bash
+# Run quick benchmarks (for development/CI)
+cargo run --release --bin qops -- benchmark quick
+
+# Run specific benchmark suite
+cargo run --release --bin qops -- benchmark vqe
+cargo run --release --bin qops -- benchmark qaoa
+cargo run --release --bin qops -- benchmark hypercube
+
+# Run all benchmarks
+cargo run --release --bin qops -- benchmark all
+```
+
+### Available Benchmarks
+
+| Benchmark | Command | Description |
+|-----------|---------|-------------|
+| VQE | `benchmark vqe` | Variational Quantum Eigensolver |
+| VQC | `benchmark vqc` | Variational Quantum Classifier |
+| QAOA | `benchmark qaoa` | Quantum Approximate Optimization |
+| QWalk | `benchmark quantum-walk` | Continuous-time quantum walks |
+| Advanced | `benchmark advanced` | Grover, QFT, QPE algorithms |
+| Integration | `benchmark integration` | Cross-module compatibility |
+| Cross-System | `benchmark cross` | Framework comparison |
+| Hypercube | `benchmark hypercube` | Hypercube-HDAG cascades |
+| Mining | `benchmark mining` | Operator mining efficiency |
+| Topology | `benchmark topology` | Topological invariants |
+| GUI Latency | `benchmark gui-latency` | Backend operation latency |
+
+### CI Integration
+
+Benchmarks run automatically via GitHub Actions:
+- **Quick benchmarks**: On every push/PR
+- **Full suite**: Manual workflow dispatch
+- **Nightly**: Scheduled runs with regression detection
+
+Results are uploaded as artifacts suitable for scientific analysis and DOI-backed technical reports.
+
+See [BENCHMARK_OVERVIEW.md](BENCHMARK_OVERVIEW.md) for detailed documentation and [BENCHMARK_SCHEMA.md](BENCHMARK_SCHEMA.md) for JSON output format.
+
 ## License
 
 MIT License - see [LICENSE](LICENSE) for details.
