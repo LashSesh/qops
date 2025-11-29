@@ -271,11 +271,3 @@ The kernel integrates with existing QOPS components:
 | High-dimensional state | Generated content |
 | Candidate in mining | Result of materialization |
 | May have constraints | Fully validated |
-
-## Future Extensions
-
-- GUI integration for visual mining exploration
-- WebAssembly support for browser-based usage
-- Distributed mining across multiple nodes
-- Custom domain adapter plugins
-- Advanced constraint satisfaction

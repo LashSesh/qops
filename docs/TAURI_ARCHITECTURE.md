@@ -30,11 +30,15 @@ The QOPS Desktop Application is a multi-window Tauri application that provides a
 
 ### Backend (Rust)
 - **Tauri 2.0**: Native desktop framework
-- **qops-core**: Shared types and resonance framework
+- **qops-core**: Shared types and Holistic Resonance Architecture
 - **qops-quantum**: Cube-13 quantum algorithms
 - **qops-circuits**: Quantum circuit simulator
-- **qops-algorithms**: Grover, Shor, QFT, VQE, QAOA
-- **qops-genesis**: S7 topology operator mining
+- **qops-algorithms**: Grover, Shor, QFT, VQE, QAOA (Trotter-Suzuki)
+- **qops-genesis**: S7 topology operator mining with holistic pipeline
+- **qops-hypercube**: 5D self-compiling cubes with HDAG execution
+- **qops-kernel**: Generative Theomimesis mining kernel M = (Q, S, F, R)
+- **qops-slots**: Quantum slots engine with sequence mining
+- **qops-triton**: TRITON spiral optimizer
 - **qops-research**: Benchmarking and experiments
 - **tokio**: Async runtime for long-running operations
 
@@ -124,11 +128,16 @@ gui/
         ├── lib.rs            # Command registration
         ├── commands/
         │   ├── mod.rs
-        │   ├── circuits.rs   # Circuit commands
-        │   ├── algorithms.rs # Algorithm commands
-        │   ├── genesis.rs    # Genesis commands
-        │   ├── quantum.rs    # Quantum commands
-        │   └── research.rs   # Research commands
+        │   ├── circuits.rs    # Circuit commands
+        │   ├── algorithms.rs  # Algorithm commands
+        │   ├── genesis.rs     # Genesis commands
+        │   ├── holistic.rs    # Holistic mining pipeline
+        │   ├── hypercube.rs   # Hypercube-HDAG commands
+        │   ├── kernel.rs      # Kernel mining & materialization
+        │   ├── slots.rs       # Slots engine commands
+        │   ├── quantum.rs     # Quantum commands
+        │   ├── calibration.rs # Calibration commands
+        │   └── research.rs    # Research commands
         │
         ├── state.rs          # Application state
         └── error.rs          # Error handling

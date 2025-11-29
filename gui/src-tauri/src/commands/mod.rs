@@ -6,6 +6,7 @@ pub mod circuits;
 pub mod genesis;
 pub mod holistic;
 pub mod hypercube;
+pub mod kernel;
 pub mod quantum;
 pub mod research;
 pub mod slots;

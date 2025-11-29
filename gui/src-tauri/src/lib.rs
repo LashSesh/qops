@@ -82,6 +82,12 @@ pub fn run() {
             commands::slots::slots_generate_artifacts,
             commands::slots::run_hypercube_slots_mode,
             commands::slots::get_slots_config_options,
+            // Kernel commands (mining & materialization)
+            commands::kernel::run_kernel_mining,
+            commands::kernel::materialize_blueprint,
+            commands::kernel::get_kernel_info,
+            commands::kernel::get_ledger_stats,
+            commands::kernel::get_mining_presets,
         ])
         .setup(|app| {
             // Additional setup if needed

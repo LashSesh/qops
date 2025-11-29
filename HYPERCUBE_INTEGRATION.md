@@ -243,11 +243,3 @@ The compilation process:
 2. Applies operator families to transform coordinates
 3. Generates artifacts (operator families, compiled results)
 4. Produces a final output coordinate
-
-## Future Enhancements
-
-- [ ] GPU-accelerated expansion
-- [ ] Distributed HDAG execution
-- [ ] Real-time visualization of cube evolution
-- [ ] Custom operator DSL
-- [ ] Persistence and serialization of cube state

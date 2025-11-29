@@ -170,10 +170,3 @@ interface UXMetadata {
   operator_highlight: string;
 }
 ```
-
-## Future Extensions
-
-- WebGL-based 3D hypercube renderer (Three.js)
-- Real-time streaming visualization
-- VR/AR support for immersive exploration
-- Sound synthesis for resonance feedback
