@@ -2,9 +2,8 @@
 //!
 //! Tools for comparing quantum algorithms and configurations.
 
-use crate::{ResearchError, Result, BenchmarkResult, StatisticalSummary, Analysis};
+use crate::{BenchmarkResult, StatisticalSummary, Analysis};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 /// Comparison result for two algorithms
 #[derive(Debug, Clone, Serialize, Deserialize)]

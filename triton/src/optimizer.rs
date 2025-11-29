@@ -8,7 +8,7 @@ use crate::search::{SearchHistory, SearchMetadata, SearchState, SearchStrategy};
 use crate::spiral::SpiralEngine;
 use crate::temperature::TemperatureController;
 use crate::topology_bias::TopologyBias;
-use qops_core::{Signature5D, resonance_5d};
+use qops_core::Signature5D;
 use serde::{Deserialize, Serialize};
 
 /// Result of an optimization run
@@ -197,7 +197,7 @@ impl TritonOptimizer {
             }
 
             // Generate neighbor with temperature-dependent radius
-            let radius = self.temperature.temperature() * 0.2;
+            let _radius = self.temperature.temperature() * 0.2;
             let neighbor = self.spiral.random_perturbation(&current);
             let neighbor_score = self.score_cached(&neighbor, scorer);
             let current_score = self.score_cached(&current, scorer);

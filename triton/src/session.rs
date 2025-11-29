@@ -3,8 +3,6 @@
 use crate::config::TritonConfig;
 use crate::optimizer::{OptimizationResult, TritonOptimizer};
 use crate::scoring::ScoringFunction;
-use crate::search::SearchStrategy;
-use qops_core::Signature5D;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 

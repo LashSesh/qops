@@ -8,18 +8,17 @@
 //!
 //! Integrates with Adaptive TRITON for spiral search optimization.
 
-use crate::agent::{Agent, AgentConfig, TraversalStrategy};
+use crate::agent::{Agent, AgentConfig};
 use crate::artefact::Artefact;
 use crate::metatron_cube::MetatronCube;
 use crate::family::OperatorFamily;
-use crate::mining::{MiningConfig, MiningStrategy, MiningResult, MiningStats};
+use crate::mining::{MiningConfig, MiningStrategy, MiningStats};
 
 use qops_core::{
-    Signature5D, resonance_5d,
+    Signature5D,
     GenesisStage, HolisticMatrix, HolisticConfig, HolisticStats,
     KosmokratorConfig, ChronokratorConfig, PfauenthronConfig,
     OperatorCandidate, ExkalibrationVector, Monolith, FinalizedFamily,
-    KosmokratorStats, ChronokratorStats, PfauenthronStats,
 };
 use qops_triton::{
     AdaptiveTritonOptimizer, AdaptiveTritonConfig, AdaptiveOptimizationResult,
@@ -27,7 +26,6 @@ use qops_triton::{
 };
 
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use rayon::prelude::*;
 
 // ============================================================================
@@ -483,7 +481,7 @@ impl HolisticMiningSession {
             self.candidates.truncate(self.candidates.len() / 2);
         }
 
-        let stats = self.matrix.kosmokrator.stats();
+        let _stats = self.matrix.kosmokrator.stats();
 
         self.current_step += 1;
         self.current_stage = GenesisStage::ChronokratorExpansion;
@@ -502,7 +500,7 @@ impl HolisticMiningSession {
     fn run_chronokrator_stage(&mut self) {
         let stage_start = self.current_step;
         self.log_stage_start(GenesisStage::ChronokratorExpansion);
-        let candidates_in = self.candidates.len();
+        let _candidates_in = self.candidates.len();
 
         let t = self.current_step as f64;
 
@@ -649,7 +647,7 @@ impl HolisticMiningSession {
         let monoliths = self.matrix.pfauenthron.monoliths.clone();
         let exkalibration_vectors = self.matrix.chronokrator.exkalibration_history.clone();
 
-        let triton_result = self.triton.as_ref().map(|t| {
+        let triton_result = self.triton.as_ref().map(|_t| {
             // Get the last result - we need to re-run to get it
             AdaptiveOptimizationResult {
                 best_signature: [0.5; 5],

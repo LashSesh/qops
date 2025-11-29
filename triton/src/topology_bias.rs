@@ -1,6 +1,6 @@
 //! Topology-aware biasing for TRITON search.
 
-use qops_core::{ResonanceTopology, Signature5D, resonance_5d};
+use qops_core::{Signature5D, resonance_5d};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 

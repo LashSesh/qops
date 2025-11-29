@@ -4,7 +4,7 @@
 
 use crate::slot::{Slot, SlotConfig, SlotValue, SlotSymbol};
 use crate::entropy::EntropyMapper;
-use crate::error::{SlotsError, Result};
+use crate::error::Result;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use uuid::Uuid;

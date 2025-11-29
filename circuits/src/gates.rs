@@ -247,7 +247,7 @@ impl Gate {
 
     /// √X gate (square root of X)
     pub fn sqrt_x() -> Self {
-        let half = Complex::new(0.5, 0.0);
+        let _half = Complex::new(0.5, 0.0);
         let half_i = Complex::new(0.5, 0.5);
         let half_mi = Complex::new(0.5, -0.5);
         Self::from_matrix_2x2(
@@ -403,7 +403,7 @@ impl Gate {
 
     /// √SWAP gate
     pub fn sqrt_swap() -> Self {
-        let half = Complex::new(0.5, 0.0);
+        let _half = Complex::new(0.5, 0.0);
         let half_i = Complex::new(0.5, 0.5);
         let half_mi = Complex::new(0.5, -0.5);
         Self::from_matrix_4x4(

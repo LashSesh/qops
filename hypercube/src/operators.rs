@@ -10,7 +10,6 @@
 //! - **Ξ (Xi)**: Self-compilation operator for cube → artifact generation
 
 use crate::coordinates::Coord5D;
-use crate::error::{HypercubeError, Result};
 use qops_core::Signature5D;
 use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;

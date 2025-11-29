@@ -2,7 +2,7 @@
 //!
 //! Provides tools for analyzing measurement outcomes and algorithm performance.
 
-use crate::{ResearchError, Result, ExperimentResult};
+use crate::ExperimentResult;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 

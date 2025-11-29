@@ -3,7 +3,7 @@
 //! Integrates the TRITON spiral search optimizer as the cube expansion rule,
 //! enabling the `--hypercube-triton-mode` functionality.
 
-use crate::cube::{Hypercube, CubeExpansionRule};
+use crate::cube::Hypercube;
 use crate::coordinates::Coord5D;
 use crate::vertex::{HypercubeVertex, VertexType};
 use crate::edge::{HypercubeEdge, EdgeWeight};

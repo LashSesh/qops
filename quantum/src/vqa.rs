@@ -51,7 +51,7 @@ impl VQE {
         let mut best_energy = f64::INFINITY;
         let learning_rate = 0.1;
 
-        for iter in 0..self.max_iterations {
+        for _iter in 0..self.max_iterations {
             let energy = self.evaluate_energy(&params);
 
             if energy < best_energy {
@@ -101,6 +101,7 @@ impl VQE {
 /// Quantum Approximate Optimization Algorithm
 pub struct QAOA {
     depth: usize,
+    #[allow(dead_code)]
     max_iterations: usize,
 }
 

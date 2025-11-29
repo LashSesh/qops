@@ -2,11 +2,11 @@
 //!
 //! Session management for the QSlots engine.
 
-use crate::lattice::{SlotLattice, LatticeConfig, LatticeResult};
+use crate::lattice::{SlotLattice, LatticeResult};
 use crate::miner::{SequenceMiner, MinerConfig, MiningResult, MinedSequence};
 use crate::entropy::{EntropyMapper, EntropyConfig};
 use crate::topology::{SlotTopology, TopologyType};
-use crate::error::{SlotsError, Result};
+use crate::error::Result;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 

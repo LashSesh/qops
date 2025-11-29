@@ -51,6 +51,7 @@ impl RefinementPass {
 /// Refinement engine for local optimization
 #[derive(Debug, Clone)]
 pub struct RefinementEngine {
+    #[allow(dead_code)]
     config: RefinementConfig,
     rng: rand::rngs::StdRng,
     passes: Vec<RefinementPass>,
@@ -285,7 +286,7 @@ impl SimplexRefiner {
 
         // Additional vertices
         let delta = 0.05;
-        let mut current = *sig;
+        let current = *sig;
         for i in 0..5 {
             let mut perturbed = current;
             match i {

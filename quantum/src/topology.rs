@@ -4,8 +4,6 @@
 //! 13-node Metatron Cube geometry.
 
 use crate::graph::MetatronGraph;
-use crate::hamiltonian::MetatronHamiltonian;
-use crate::state::QuantumState;
 use nalgebra::DMatrix;
 use qops_core::{Signature5D, resonance_5d, ResonanceTopology};
 use serde::{Deserialize, Serialize};
@@ -129,7 +127,7 @@ impl Cube13Engine {
 
     /// Find best embedding position for a signature
     pub fn find_best_embedding(&self, sig: &Signature5D) -> usize {
-        let target_res = resonance_5d(sig);
+        let _target_res = resonance_5d(sig);
 
         // Score each node based on neighborhood compatibility
         let scores: Vec<(usize, f64)> = (0..13)
@@ -454,6 +452,7 @@ pub struct TopologyExplorer {
     engine: Cube13Engine,
     current_node: usize,
     exploration_history: Vec<usize>,
+    #[allow(dead_code)]
     discovered_clusters: Vec<OperatorCluster>,
 }
 

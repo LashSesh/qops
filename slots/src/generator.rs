@@ -4,9 +4,7 @@
 
 use crate::slot::{Slot, SlotConfig, SlotValue, SlotSymbol};
 use crate::entropy::{EntropyMapper, EntropyConfig};
-use crate::error::Result;
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 
 /// Generator configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]

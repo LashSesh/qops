@@ -2,8 +2,8 @@
 //!
 //! Mines optimal operator sequences from slot configurations.
 
-use crate::lattice::{SlotLattice, LatticeConfig, LatticeResult};
-use crate::entropy::{EntropyMapper, EntropyConfig, EntropyDistribution};
+use crate::lattice::{SlotLattice, LatticeConfig};
+use crate::entropy::{EntropyMapper, EntropyConfig};
 use crate::slot::SlotSymbol;
 use crate::error::Result;
 use serde::{Deserialize, Serialize};

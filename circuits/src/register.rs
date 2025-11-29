@@ -5,7 +5,6 @@
 use crate::{Complex, Gate, Circuit, CircuitError, Result, ZERO, ONE};
 use nalgebra::DMatrix;
 use rand::Rng;
-use serde::{Deserialize, Serialize};
 
 /// State vector representation of a quantum register
 #[derive(Debug, Clone)]
@@ -430,7 +429,7 @@ impl QuantumRegister {
     fn expand_multi_qubit_gate(&self, gate: &Gate, qubits: &[usize]) -> Result<DMatrix<Complex>> {
         let n = self.num_qubits();
         let dim = 1 << n;
-        let gate_dim = 1 << qubits.len();
+        let _gate_dim = 1 << qubits.len();
         let gate_matrix = gate.matrix();
 
         let mut full_matrix = DMatrix::zeros(dim, dim);

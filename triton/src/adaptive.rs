@@ -10,9 +10,8 @@
 //! - Fine-grain local search mode
 //! - Resonance-weighted expansion
 
-use crate::config::{SpiralParams, TritonConfig};
-use crate::spiral::{SpiralEngine, SpiralState, SpiralTrajectory};
-use crate::scoring::ScoringFunction;
+use crate::config::TritonConfig;
+use crate::spiral::{SpiralEngine, SpiralTrajectory};
 use qops_core::{Signature5D, resonance_5d, HolisticMatrix, HolisticConfig, OperatorCandidate};
 use serde::{Deserialize, Serialize};
 use rand::Rng;
@@ -1107,6 +1106,7 @@ impl AdaptiveTritonOptimizer {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::config::SpiralParams;
 
     #[test]
     fn test_adaptive_radius() {

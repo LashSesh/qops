@@ -3,7 +3,7 @@
 //! Generate comprehensive reports in various formats.
 
 use crate::{
-    ResearchError, Result, BenchmarkSuite, ExperimentResult,
+    BenchmarkSuite, ExperimentResult,
     StatisticalSummary, ComparisonResult, PlotData
 };
 use serde::{Deserialize, Serialize};

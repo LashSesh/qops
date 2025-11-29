@@ -2,7 +2,6 @@
 
 use qops_core::Signature5D;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 /// Metrics for a single search layer
 #[derive(Debug, Clone, Serialize, Deserialize)]

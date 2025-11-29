@@ -9,8 +9,7 @@
 //! - U_C(γ) = exp(-iγC) is the cost/problem unitary
 //! - U_B(β) = exp(-iβB) is the mixer unitary
 
-use qops_circuits::{Circuit, Gate, QuantumRegister, Measurement};
-use crate::{AlgorithmError, Result};
+use qops_circuits::{Circuit, QuantumRegister};
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;
@@ -80,7 +79,7 @@ impl CostFunction {
             }
 
             CostFunction::VertexCover(edges, penalty) => {
-                let num_vertices = bitstring.len();
+                let _num_vertices = bitstring.len();
                 let mut cost = 0.0;
 
                 // Count selected vertices
@@ -448,7 +447,7 @@ impl QAOA {
 
         // Find best solution
         let (best_bitstring, _) = counts.iter()
-            .max_by(|(a_str, a_count), (b_str, b_count)| {
+            .max_by(|(a_str, _a_count), (b_str, _b_count)| {
                 let a_bits: Vec<bool> = a_str.chars().map(|c| c == '1').collect();
                 let b_bits: Vec<bool> = b_str.chars().map(|c| c == '1').collect();
                 let a_cost = self.cost_function.evaluate(&a_bits);
@@ -484,6 +483,7 @@ impl QAOA {
 }
 
 /// CVaR (Conditional Value at Risk) QAOA variant
+#[allow(non_camel_case_types)]
 pub struct CVaR_QAOA {
     /// Base QAOA
     pub qaoa: QAOA,

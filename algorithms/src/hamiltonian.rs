@@ -10,7 +10,7 @@
 //! - Quantum signal processing
 //! - Linear combination of unitaries (LCU)
 
-use qops_circuits::{Circuit, Gate, QuantumRegister, Complex};
+use qops_circuits::{Circuit, QuantumRegister, Complex};
 use crate::{AlgorithmError, Result, vqe::PauliSum};
 use nalgebra::DMatrix;
 use std::f64::consts::PI;
@@ -117,7 +117,7 @@ impl TrotterDecomposition {
 
     /// Add rotation for a Pauli string: exp(-iθP)
     fn add_pauli_rotation(&self, mut circuit: Circuit, pauli: &str, theta: f64) -> Circuit {
-        let n = pauli.len();
+        let _n = pauli.len();
 
         // Find non-identity positions
         let non_identity: Vec<(usize, char)> = pauli.chars()
@@ -282,7 +282,7 @@ impl HamiltonianSimulation {
     fn pauli_string_matrix(pauli: &str) -> Result<DMatrix<f64>> {
         let i_mat = DMatrix::from_row_slice(2, 2, &[1.0, 0.0, 0.0, 1.0]);
         let x_mat = DMatrix::from_row_slice(2, 2, &[0.0, 1.0, 1.0, 0.0]);
-        let y_mat_real = DMatrix::from_row_slice(2, 2, &[0.0, 0.0, 0.0, 0.0]); // Y has imaginary entries
+        let _y_mat_real = DMatrix::from_row_slice(2, 2, &[0.0, 0.0, 0.0, 0.0]); // Y has imaginary entries
         let z_mat = DMatrix::from_row_slice(2, 2, &[1.0, 0.0, 0.0, -1.0]);
 
         let mut result: Option<DMatrix<f64>> = None;

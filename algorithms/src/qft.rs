@@ -10,7 +10,7 @@
 //! - Shor's algorithm
 //! - Quantum signal processing
 
-use qops_circuits::{Circuit, Gate, QuantumRegister, Complex};
+use qops_circuits::{Circuit, QuantumRegister, Complex};
 use crate::{AlgorithmError, Result};
 use std::f64::consts::PI;
 
@@ -236,6 +236,7 @@ impl QuantumAdder {
 mod tests {
     use super::*;
     use approx::assert_relative_eq;
+    use qops_circuits::Gate;
 
     #[test]
     fn test_qft_inverse() {

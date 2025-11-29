@@ -45,7 +45,7 @@ impl SeraphicBridge {
     }
 
     /// Record pipeline step
-    pub fn record_step<P: GenerativePipeline>(&mut self, pipeline: &P) {
+    pub fn record_step<P: GenerativePipeline>(&mut self, _pipeline: &P) {
         self.steps_since_calibration += 1;
 
         if self.should_calibrate() {

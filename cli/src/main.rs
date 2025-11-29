@@ -1024,7 +1024,7 @@ fn run_qft_circuit(qubits: usize) {
     println!("\n{}", format!("Quantum Fourier Transform ({} qubits)", qubits).cyan().bold());
     println!("{}\n", "=".repeat(50).dimmed());
 
-    use qops_circuits::{Circuit, QuantumRegister, Gate};
+    use qops_circuits::{QuantumRegister, Gate};
     use qops_algorithms::QuantumFourierTransform;
 
     let qft = QuantumFourierTransform::new(qubits);
@@ -1298,7 +1298,7 @@ fn run_qaoa(qubits: usize, layers: usize) {
     println!("\n{}", "QAOA - Quantum Approximate Optimization".cyan().bold());
     println!("{}\n", "=".repeat(50).dimmed());
 
-    use qops_algorithms::{QAOA, QAOAConfig};
+    use qops_algorithms::QAOA;
 
     println!("{}", "Configuration:".yellow());
     println!("  Qubits: {}", qubits);
@@ -1978,8 +1978,6 @@ fn run_hypercube(args: HypercubeArgs) {
         Hypercube, HypercubeConfig, CubeExpansionRule,
         HypercubeCompiler, CompilationConfig,
         HDAG, HDAGExecutor,
-        HypercubeSession, SessionConfig,
-        HypercubeTritonMode, TritonExpansionConfig,
         Coord5D,
     };
 
@@ -2072,7 +2070,7 @@ fn run_hypercube(args: HypercubeArgs) {
             println!("  Max depth: {}", cube.stats.max_depth_reached);
         }
 
-        HypercubeMode::ExecHdag { graph, parallel } => {
+        HypercubeMode::ExecHdag { graph: _, parallel } => {
             println!("\n{}", "HDAG Execution".blue().bold());
             println!("{}\n", "=".repeat(50).dimmed());
 
@@ -2173,8 +2171,7 @@ fn run_slots(args: SlotsArgs) {
     use qops_slots::{
         SlotsSession, SlotsSessionConfig,
         SequenceMiner, MinerConfig, MiningStrategy,
-        EntropyConfig, EntropyDistribution,
-        SlotTopology, TopologyType,
+        EntropyConfig,
     };
 
     match args.mode {

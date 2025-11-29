@@ -13,8 +13,7 @@
 //! 4. If r is even and a^{r/2} ≠ -1 (mod N):
 //!    - gcd(a^{r/2} ± 1, N) are factors
 
-use crate::{AlgorithmError, Result, QuantumPhaseEstimation};
-use qops_circuits::{Circuit, Gate, QuantumRegister, Measurement};
+use qops_circuits::Circuit;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;

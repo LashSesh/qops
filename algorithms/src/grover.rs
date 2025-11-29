@@ -13,8 +13,7 @@
 //!    b. Diffusion: Reflect about the mean
 //! 3. Measure to find marked state
 
-use qops_circuits::{Circuit, Gate, QuantumRegister, Measurement};
-use crate::{AlgorithmError, Result};
+use qops_circuits::{Circuit, QuantumRegister, Measurement};
 use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;
 

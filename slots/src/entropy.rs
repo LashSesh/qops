@@ -3,7 +3,7 @@
 //! Maps randomness sources to structured operator outcomes.
 
 use rand::Rng;
-use rand_distr::{Distribution, Normal, Uniform};
+use rand_distr::{Distribution, Normal};
 use serde::{Deserialize, Serialize};
 
 /// Entropy distribution type

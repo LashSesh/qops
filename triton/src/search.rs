@@ -1,6 +1,5 @@
 //! Search strategy definitions and state management.
 
-use crate::topology_bias::BiasMode;
 use qops_core::Signature5D;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;

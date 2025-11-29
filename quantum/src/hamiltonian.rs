@@ -13,6 +13,7 @@ pub struct MetatronHamiltonian {
     /// Eigenvalues
     eigenvalues: Vec<f64>,
     /// Eigenvectors
+    #[allow(dead_code)]
     eigenvectors: DMatrix<Complex64>,
 }
 

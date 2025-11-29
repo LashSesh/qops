@@ -4,7 +4,6 @@
 
 use crate::{ResearchError, Result, BenchmarkSuite, ExperimentResult};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 /// Export format
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
