@@ -222,8 +222,13 @@ jobs:
       - name: Compare with previous run (regression detection)
         if: steps.fetch-prev.outcome == 'success'
         run: |
+          # Install jq if not available
+          which jq || sudo apt-get update && sudo apt-get install -y jq
+
           echo "## Nightly Benchmark Regression Report" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Benchmark | Previous | Current | Change |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|----------|---------|--------|" >> $GITHUB_STEP_SUMMARY
 
           # Simple regression detection script
           for f in bench_results/*.json; do
@@ -236,11 +241,16 @@ jobs:
               prev_duration=$(jq -r '.summary.total_duration_ms // 0' "$prev_file")
 
               if [ "$prev_duration" != "0" ] && [ "$curr_duration" != "0" ]; then
-                change=$(echo "scale=2; ($curr_duration - $prev_duration) / $prev_duration * 100" | bc)
+                # Use awk instead of bc for portability
+                change=$(awk "BEGIN {printf \"%.2f\", ($curr_duration - $prev_duration) / $prev_duration * 100}")
                 
-                if (( $(echo "$change > 20" | bc -l) )); then
+                # Use awk for comparison
+                is_regression=$(awk "BEGIN {print ($change > 20) ? 1 : 0}")
+                is_improvement=$(awk "BEGIN {print ($change < -20) ? 1 : 0}")
+                
+                if [ "$is_regression" = "1" ]; then
                   echo "| $name | ${prev_duration}ms | ${curr_duration}ms | ⚠️ +${change}% |" >> $GITHUB_STEP_SUMMARY
-                elif (( $(echo "$change < -20" | bc -l) )); then
+                elif [ "$is_improvement" = "1" ]; then
                   echo "| $name | ${prev_duration}ms | ${curr_duration}ms | 🎉 ${change}% |" >> $GITHUB_STEP_SUMMARY
                 else
                   echo "| $name | ${prev_duration}ms | ${curr_duration}ms | ✅ ${change}% |" >> $GITHUB_STEP_SUMMARY

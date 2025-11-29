@@ -1151,14 +1151,22 @@ pub fn run_topology_benchmarks(config: TopologyBenchConfig) -> BenchmarkOutput {
                     let k1 = 2.0 * PI * i as f64 / size as f64;
                     let k2 = 2.0 * PI * j as f64 / size as f64;
                     
+                    // Components of the d-vector for a 2-band model
                     let d1 = k1.sin();
                     let d2 = k2.sin();
                     let d3 = 2.0 - k1.cos() - k2.cos();
                     let d_norm = (d1*d1 + d2*d2 + d3*d3).sqrt();
                     
                     if d_norm > 0.001 {
-                        let curvature = (d1 * d2 - d2 * d1) / (d_norm * d_norm * d_norm);
-                        chern_sum += curvature;
+                        // Berry curvature for 2-band model: F = (d · (∂_k1 d × ∂_k2 d)) / (2|d|³)
+                        // Simplified: use finite differences for derivatives
+                        let dk = 0.01;
+                        let d1_dk1 = ((k1 + dk).sin() - d1) / dk;
+                        let d2_dk2 = ((k2 + dk).sin() - d2) / dk;
+                        
+                        // Cross product z-component gives Berry curvature
+                        let curvature = (d1 * d2_dk2 - d2 * d1_dk1) / (d_norm * d_norm * d_norm);
+                        chern_sum += curvature / (size as f64).powi(2);
                     }
                 }
             }
