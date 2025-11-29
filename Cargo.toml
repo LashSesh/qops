@@ -11,6 +11,7 @@ members = [
     "adapters",
     "hypercube",
     "slots",
+    "kernel",
     "cli",
     "gui/src-tauri",
 ]
@@ -83,6 +84,7 @@ qops-adapters = { path = "adapters" }
 qops-triton = { path = "triton" }
 qops-hypercube = { path = "hypercube" }
 qops-slots = { path = "slots" }
+qops-kernel = { path = "kernel" }
 
 [profile.release]
 opt-level = 3

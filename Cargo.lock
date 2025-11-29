@@ -3058,6 +3058,7 @@ dependencies = [
  "qops-core",
  "qops-genesis",
  "qops-hypercube",
+ "qops-kernel",
  "qops-quantum",
  "qops-research",
  "qops-seraphic",
@@ -3154,6 +3155,30 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror 2.0.17",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "qops-kernel"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "approx",
+ "chrono",
+ "log",
+ "nalgebra",
+ "petgraph",
+ "qops-core",
+ "qops-genesis",
+ "qops-hypercube",
+ "qops-triton",
+ "rand 0.8.5",
+ "serde",
+ "serde_json",
+ "sha2",
+ "thiserror 2.0.17",
+ "toml 0.8.2",
  "tracing",
  "uuid",
 ]

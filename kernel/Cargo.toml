@@ -1,0 +1,51 @@
+[package]
+name = "qops-kernel"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Hypercube-based kernel for generative theomimesis - domain-agnostic blueprint mining"
+
+[dependencies]
+# Internal crates
+qops-core = { path = "../core" }
+qops-hypercube = { path = "../hypercube" }
+qops-genesis = { path = "../genesis" }
+qops-triton = { path = "../triton" }
+
+# Serialization
+serde = { workspace = true }
+serde_json = { workspace = true }
+toml = { workspace = true }
+
+# Numerics
+nalgebra = { workspace = true }
+
+# Random
+rand = { workspace = true }
+
+# Cryptography
+sha2 = { workspace = true }
+uuid = { workspace = true }
+
+# Date/Time
+chrono = { workspace = true }
+
+# Error handling
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+
+# Graph structures
+petgraph = { workspace = true }
+
+# Logging
+log = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+approx = { workspace = true }
+
+[features]
+default = []
+full = []

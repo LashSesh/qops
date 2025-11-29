@@ -77,6 +77,9 @@ enum Commands {
 
     /// Quantum Slots Engine commands
     Slots(SlotsArgs),
+
+    /// Hypercube Kernel for Generative Theomimesis
+    Kernel(KernelArgs),
 }
 
 // ============================================================================
@@ -2306,6 +2309,351 @@ fn run_slots(args: SlotsArgs) {
 }
 
 // ============================================================================
+// KERNEL COMMAND
+// ============================================================================
+
+#[derive(Args)]
+struct KernelArgs {
+    #[command(subcommand)]
+    mode: KernelMode,
+}
+
+#[derive(Subcommand)]
+enum KernelMode {
+    /// Mine blueprints in the hypercube state space
+    Mine {
+        /// Configuration file (TOML)
+        #[arg(long)]
+        config: Option<String>,
+        /// Maximum iterations
+        #[arg(short, long, default_value_t = 1000)]
+        iterations: usize,
+        /// Target resonance threshold
+        #[arg(long, default_value_t = 0.7)]
+        target: f64,
+        /// Search strategy
+        #[arg(long, default_value = "hybrid")]
+        strategy: String,
+        /// Output directory
+        #[arg(long)]
+        output: Option<String>,
+    },
+    /// Materialize blueprints into artefacts
+    Materialize {
+        /// Blueprint ID or path
+        blueprint: String,
+        /// Output type
+        #[arg(long, default_value = "json")]
+        output_type: String,
+        /// Output directory
+        #[arg(long)]
+        output: Option<String>,
+    },
+    /// Query the transformation ledger
+    Ledger {
+        #[command(subcommand)]
+        action: LedgerAction,
+    },
+    /// Show kernel system information
+    Info,
+}
+
+#[derive(Subcommand)]
+enum LedgerAction {
+    /// List recent transformations
+    List {
+        /// Maximum entries to show
+        #[arg(short, long, default_value_t = 10)]
+        limit: usize,
+    },
+    /// Show ledger statistics
+    Stats,
+    /// Verify ledger integrity
+    Verify,
+    /// Export ledger to JSON
+    Export {
+        /// Output file
+        #[arg(long)]
+        output: Option<String>,
+    },
+}
+
+fn run_kernel(args: KernelArgs) {
+    use qops_kernel::{
+        KernelConfig,
+        MiningKernel, MiningConfig, SearchStrategy,
+        Materializer,
+        MemoryLedger, KernelLedger,
+        Blueprint,
+        CoreSignature, State,
+        materialization::ArtefactType,
+    };
+    use std::path::PathBuf;
+
+    match args.mode {
+        KernelMode::Mine { config, iterations, target, strategy, output } => {
+            println!("\n{}", "Hypercube Kernel Mining".blue().bold());
+            println!("{}\n", "=".repeat(60).dimmed());
+
+            // Load or create config
+            let kernel_config = if let Some(config_path) = config {
+                println!("{}: {}", "Loading config from".yellow(), config_path);
+                KernelConfig::load(&PathBuf::from(config_path))
+                    .unwrap_or_else(|e| {
+                        println!("{}: {}", "Warning".yellow(), e);
+                        KernelConfig::default()
+                    })
+            } else {
+                KernelConfig::default()
+            };
+
+            let search_strategy = match strategy.as_str() {
+                "greedy" => SearchStrategy::Greedy,
+                "stochastic" => SearchStrategy::Stochastic { temperature: 1.0 },
+                "beam" => SearchStrategy::Beam { width: 10 },
+                "evolutionary" => SearchStrategy::Evolutionary { population_size: 50, mutation_rate: 0.1 },
+                "triton" => SearchStrategy::Triton,
+                "hybrid" | _ => SearchStrategy::Hybrid,
+            };
+
+            println!("{}", "Configuration:".yellow());
+            println!("  Iterations: {}", iterations);
+            println!("  Target resonance: {:.2}", target);
+            println!("  Strategy: {:?}", search_strategy);
+            if let Some(ref out) = output {
+                println!("  Output: {}", out);
+            }
+            println!();
+
+            // Create mining config
+            let mining_config = MiningConfig {
+                max_iterations: iterations,
+                target_resonance: target,
+                exploration_rate: kernel_config.mining.exploration_rate,
+                strategy: search_strategy.clone(),
+                ..Default::default()
+            };
+
+            // Create seed states
+            let seed_state = State::Core(CoreSignature::new(0.5, 0.5, 0.5, 0.5, 0.5));
+            let seeds = vec![seed_state];
+
+            // Create mining kernel
+            let mut miner = MiningKernel::new(mining_config);
+
+            println!("{}", "Mining...".cyan());
+            let pb = create_stage_spinner("Exploring hypercube state space...");
+
+            match miner.mine(&seeds) {
+                Ok(result) => {
+                    pb.finish_and_clear();
+
+                    println!("\n{}", "Results:".green().bold());
+                    println!("{}", "-".repeat(60).dimmed());
+                    println!("  Iterations: {}", result.iterations);
+                    println!("  Candidates found: {}", result.candidates.len());
+                    println!("  Best resonance: {:.4}", result.best_resonance);
+
+                    println!("\n{}", "Statistics:".cyan());
+                    println!("  Total evaluated: {}", result.stats.total_evaluated);
+                    println!("  Passed filters: {}", result.stats.passed_filters);
+                    println!("  Merged: {}", result.stats.merged_count);
+                    println!("  Stagnation count: {}", result.stats.stagnation_count);
+
+                    if !result.candidates.is_empty() {
+                        println!("\n{}", "Top Candidates:".cyan());
+                        for (i, candidate) in result.candidates.iter().take(5).enumerate() {
+                            let sig = candidate.blueprint.signature();
+                            println!("  {}. {} (R={:.4})", i + 1, candidate.blueprint.name, candidate.resonance_score);
+                            println!("     State: ({:.2}, {:.2}, {:.2}, {:.2}, {:.2})",
+                                sig.psi, sig.rho, sig.omega, sig.chi, sig.eta);
+                        }
+                    }
+                }
+                Err(e) => {
+                    pb.finish_and_clear();
+                    println!("\n{}: {}", "Error".red(), e);
+                }
+            }
+        }
+
+        KernelMode::Materialize { blueprint, output_type, output } => {
+            println!("\n{}", "Blueprint Materialization".blue().bold());
+            println!("{}\n", "=".repeat(60).dimmed());
+
+            println!("{}", "Input:".yellow());
+            println!("  Blueprint: {}", blueprint);
+            println!("  Output type: {}", output_type);
+            if let Some(ref out) = output {
+                println!("  Output dir: {}", out);
+            }
+            println!();
+
+            let artefact_type = match output_type.as_str() {
+                "code" => ArtefactType::Code,
+                "config" => ArtefactType::Configuration,
+                "document" | "doc" => ArtefactType::Document,
+                "json" | _ => ArtefactType::Data,
+            };
+
+            // Create a test blueprint
+            let state = State::Core(CoreSignature::new(0.8, 0.75, 0.9, 0.6, 0.3));
+            let test_blueprint = Blueprint::from_state(&blueprint, state);
+
+            // Create materializer
+            let output_dir = output.map(PathBuf::from).unwrap_or_else(|| PathBuf::from("./output"));
+            let ledger = MemoryLedger::new();
+            let mut materializer = Materializer::new(output_dir.clone())
+                .with_ledger(Box::new(ledger));
+
+            println!("{}", "Materializing...".cyan());
+            let pb = create_stage_spinner("Generating artefact...");
+
+            match materializer.materialize(&test_blueprint, artefact_type) {
+                Ok(result) => {
+                    pb.finish_and_clear();
+                    println!("\n{}", "Success:".green().bold());
+                    println!("{}", "-".repeat(60).dimmed());
+                    println!("  Artefact ID: {}", result.artefact.id);
+                    println!("  Type: {:?}", result.artefact.artefact_type);
+
+                    if !result.warnings.is_empty() {
+                        println!("\n{}", "Warnings:".yellow());
+                        for w in &result.warnings {
+                            println!("  - {}", w);
+                        }
+                    }
+
+                    if let Some(entry) = result.ledger_entry {
+                        println!("\n{}", "Ledger Entry:".cyan());
+                        println!("  Blueprint: {}", entry.entry.blueprint_id);
+                        println!("  Artefact: {}", entry.entry.artefact_id);
+                        println!("  Resonance: {:.4}", entry.entry.resonance_score);
+                    }
+                }
+                Err(e) => {
+                    pb.finish_and_clear();
+                    println!("\n{}: {}", "Error".red(), e);
+                }
+            }
+        }
+
+        KernelMode::Ledger { action } => {
+            let ledger = MemoryLedger::new();
+
+            match action {
+                LedgerAction::List { limit } => {
+                    println!("\n{}", "Transformation Ledger".blue().bold());
+                    println!("{}\n", "=".repeat(60).dimmed());
+
+                    let count = ledger.count().unwrap_or(0);
+                    println!("{}: {} records", "Total".yellow(), count);
+
+                    if count == 0 {
+                        println!("\n{}", "No transformations recorded yet.".dimmed());
+                    } else {
+                        println!("\n{} (limit {}):", "Recent Transformations".cyan(), limit);
+                        // Would iterate through records here
+                    }
+                }
+
+                LedgerAction::Stats => {
+                    println!("\n{}", "Ledger Statistics".blue().bold());
+                    println!("{}\n", "=".repeat(60).dimmed());
+
+                    let count = ledger.count().unwrap_or(0);
+                    println!("  Total records: {}", count);
+                    println!("  Integrity: {}", if ledger.verify_integrity().unwrap_or(false) { "Verified".green() } else { "Unknown".yellow() });
+                }
+
+                LedgerAction::Verify => {
+                    println!("\n{}", "Ledger Verification".blue().bold());
+                    println!("{}\n", "=".repeat(60).dimmed());
+
+                    let pb = create_stage_spinner("Verifying integrity...");
+                    let result = ledger.verify_integrity();
+                    pb.finish_and_clear();
+
+                    match result {
+                        Ok(true) => println!("{}", "Ledger integrity verified.".green()),
+                        Ok(false) => println!("{}", "Ledger integrity check FAILED!".red().bold()),
+                        Err(e) => println!("{}: {}", "Error during verification".red(), e),
+                    }
+                }
+
+                LedgerAction::Export { output } => {
+                    println!("\n{}", "Ledger Export".blue().bold());
+                    println!("{}\n", "=".repeat(60).dimmed());
+
+                    match ledger.export() {
+                        Ok(data) => {
+                            let json = serde_json::to_string_pretty(&data).unwrap_or_default();
+                            if let Some(path) = output {
+                                std::fs::write(&path, &json).unwrap();
+                                println!("{}: {}", "Exported to".green(), path);
+                            } else {
+                                println!("{}", json);
+                            }
+                        }
+                        Err(e) => println!("{}: {}", "Error".red(), e),
+                    }
+                }
+            }
+        }
+
+        KernelMode::Info => {
+            println!("\n{}", "Hypercube Kernel for Generative Theomimesis".cyan().bold());
+            println!("{}\n", "=".repeat(60).dimmed());
+
+            println!("{}: {}", "Version".yellow(), qops_kernel::VERSION);
+            println!();
+
+            println!("{}", "ARCHITECTURE (L1-L7):".yellow().bold());
+            println!("{}", "-".repeat(60).dimmed());
+            println!("  {} | Maps domain objects to H^n state space", "L1: Domain Adapter  ".cyan());
+            println!("  {} | Computes signatures and R(v)", "L2: Spectral        ".cyan());
+            println!("  {} | Maintains Q and G structures", "L3: Hypercube/HDAG  ".cyan());
+            println!("  {} | Implements M = (Q, S, F, R)", "L4: Mining          ".cyan());
+            println!("  {} | Creates artefacts from blueprints", "L5: Materialization ".cyan());
+            println!("  {} | GUI, API, CLI interfaces", "L6: User/Integration".cyan());
+            println!("  {} | Records transformations B → A", "L7: Ledger          ".cyan());
+            println!();
+
+            println!("{}", "CORE SIGNATURE (ψ, ρ, ω, χ, η):".yellow().bold());
+            println!("{}", "-".repeat(60).dimmed());
+            println!("  {} | Intensity/amplitude", "ψ (psi)  ".green());
+            println!("  {} | Coherence/correlation", "ρ (rho)  ".green());
+            println!("  {} | Frequency/periodicity", "ω (omega)".green());
+            println!("  {} | Coupling/entanglement", "χ (chi)  ".green());
+            println!("  {} | Dissipation/decay", "η (eta)  ".green());
+            println!();
+
+            println!("{}", "RESONANCE FUNCTION:".yellow().bold());
+            println!("{}", "-".repeat(60).dimmed());
+            println!("  Simple:   R(v) = ψ·ρ·ω");
+            println!("  Extended: R(v) = ψ·ρ·ω·(1 + α·χ - β·η)");
+            println!();
+
+            println!("{}", "OPERATORS:".yellow().bold());
+            println!("{}", "-".repeat(60).dimmed());
+            println!("  {} | Input → {{B1, ..., Bk}}", "Extract   ".green());
+            println!("  {} | {{(Bi, vi)}} → {{(B'j, v'j)}}", "Compose   ".green());
+            println!("  {} | B → A", "Materialize".green());
+            println!();
+
+            println!("{}", "SEARCH STRATEGIES:".yellow().bold());
+            println!("{}", "-".repeat(60).dimmed());
+            println!("  greedy      | Always take best option");
+            println!("  stochastic  | Simulated annealing");
+            println!("  beam        | Beam search with k candidates");
+            println!("  evolutionary| Genetic algorithm");
+            println!("  triton      | TRITON spiral search");
+            println!("  hybrid      | Triton + Evolutionary combined");
+        }
+    }
+}
+
+// ============================================================================
 // INFO COMMAND
 // ============================================================================
 
@@ -2389,5 +2737,6 @@ fn main() {
         Commands::Calibrate(args) => run_calibrate(args),
         Commands::Hypercube(args) => run_hypercube(args),
         Commands::Slots(args) => run_slots(args),
+        Commands::Kernel(args) => run_kernel(args),
     }
 }

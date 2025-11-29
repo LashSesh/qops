@@ -134,6 +134,45 @@ The Hypercube framework provides self-compiling 5D cube structures with hierarch
 
 See [HYPERCUBE_INTEGRATION.md](HYPERCUBE_INTEGRATION.md) for details.
 
+## Hypercube Kernel for Generative Theomimesis
+
+A domain-agnostic kernel for blueprint mining and transformation on high-dimensional state spaces:
+
+```
++-------------------------------------------------------------------------+
+|                HYPERCUBE KERNEL FOR GENERATIVE THEOMIMESIS              |
+|                                                                         |
+|  L1: Domain Adapter Layer     - Maps objects to H^n via D_d             |
+|  L2: Spectral/Signature Layer - Computes signatures and R(v)            |
+|  L3: Hypercube/HDAG Layer     - Maintains Q and G structures            |
+|  L4: Mining Layer             - Implements M = (Q, S, F, R)             |
+|  L5: Materialization Layer    - Applies M to create artefacts           |
+|  L6: User/Integration Layer   - GUI, API, CLI interfaces                |
+|  L7: Ledger/Governance Layer  - Records transformations B -> A          |
++-------------------------------------------------------------------------+
+```
+
+**Key Features:**
+- **5D Core Signature**: (psi, rho, omega, chi, eta) state representation
+- **Resonance Function R(v)**: `R(v) = psi * rho * omega` (simple) or extended variants
+- **Core Operators**: Extract, Compose, Materialize pipeline
+- **Mining Kernel M = (Q, S, F, R)**: Multiple search strategies (greedy, beam, evolutionary, TRITON, hybrid)
+- **Transformation Ledger**: Hash-chained record of all B -> A transformations
+
+```bash
+# Run kernel mining
+cargo run --bin qops -- kernel mine --iterations 1000 --target 0.7 --strategy hybrid
+
+# Materialize a blueprint
+cargo run --bin qops -- kernel materialize my_blueprint --output-type json
+
+# Query the ledger
+cargo run --bin qops -- kernel ledger list
+cargo run --bin qops -- kernel ledger verify
+```
+
+See [docs/HYPERCUBE_KERNEL_OVERVIEW.md](docs/HYPERCUBE_KERNEL_OVERVIEW.md) for details.
+
 ## Quantum Slots Engine (QSlots)
 
 Entropy-driven slot evaluation with sequence mining capabilities:
@@ -333,6 +372,13 @@ qops/
 │   ├── miner.rs    # Sequence mining strategies
 │   ├── entropy.rs  # Entropy distributions
 │   └── hypercube_integration.rs # Slots-hypercube bridge
+├── kernel/         # Hypercube Kernel for Generative Theomimesis
+│   ├── state.rs    # H^n state space with core signature
+│   ├── resonance.rs # R(v) resonance functions
+│   ├── operators.rs # Extract, Compose, Materialize
+│   ├── mining.rs   # Mining kernel M = (Q, S, F, R)
+│   ├── materialization.rs # Blueprint -> Artefact
+│   └── ledger.rs   # Transformation ledger
 ├── gui/            # Tauri + SvelteKit desktop application
 │   ├── src-tauri/  # Rust backend with Tauri commands
 │   └── src/        # SvelteKit frontend
