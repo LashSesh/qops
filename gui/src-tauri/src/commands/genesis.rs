@@ -5,7 +5,7 @@
 use super::*;
 use crate::error::{AppError, Result};
 use crate::state::AppState;
-use qops_genesis::{MiningSession, MiningConfig, MiningStrategy, MetatronCube, OperatorFamily};
+use qops_genesis::{MiningSession, MiningConfig, MiningStrategy, MetatronCube};
 use qops_core::ResonanceTopology;
 use tauri::State;
 

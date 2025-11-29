@@ -30,6 +30,9 @@ pub enum AppError {
     #[error("Serialization error: {0}")]
     Serialization(String),
 
+    #[error("IO error: {0}")]
+    Io(String),
+
     #[error("Internal error: {0}")]
     Internal(String),
 }

@@ -7,7 +7,7 @@ use crate::error::{AppError, Result};
 use qops_quantum::{MetatronGraph, MetatronHamiltonian, QuantumState};
 use qops_quantum::quantum_walk::ContinuousQuantumWalk;
 use qops_quantum::vqa::VQE;
-use qops_quantum::topology::{Cube13Engine, Cube13NodeType, TopologyMetrics};
+use qops_quantum::topology::{Cube13Engine, Cube13NodeType};
 use qops_core::Signature5D;
 
 /// Cube-13 topology metrics DTO
